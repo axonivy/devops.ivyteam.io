@@ -25,28 +25,23 @@ pipeline {
         dockerfile {
           filename 'Dockerfile.maven'
         }
+        reu
       }
 
       steps {
         script {
-          maven cmd: "clean install"
-        }
-        junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/surefire-reports/**/*.xml'
-        recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
-        recordIssues tools: [mavenConsole()]
-      }
-    }
+          maven cmd: "clean install -Pproduction"
 
-    stage('build') {
-      steps {
-        script {
           def image = docker.build("ivyteam-devops:latest", ".")
           if (env.BRANCH_NAME == 'master') {
             docker.withRegistry('https://docker-registry.ivyteam.io', 'docker-registry.ivyteam.io') {            
               image.push()
             }
-          }          
-        }        
+          }
+        }
+        junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/surefire-reports/**/*.xml'
+        recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
+        recordIssues tools: [mavenConsole()]
       }
     }
   }
