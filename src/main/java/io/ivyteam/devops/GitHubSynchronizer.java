@@ -7,8 +7,12 @@ import java.util.List;
 import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GitHubSynchronizer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GitHubSynchronizer.class);
 
   public void run() {
     if (Database.exists()) {
@@ -18,6 +22,7 @@ public class GitHubSynchronizer {
 
     try (var connection = Database.connection()) {
       for (var repo : reposFor("axonivy")) {
+        LOGGER.info("Indexing repository " + repo.getFullName());
         try (var stmt = connection.prepareStatement(
             "INSERT INTO repository (name, archived, openPullRequests, license) VALUES (?, ?, ?, ?)")) {
           stmt.setString(1, repo.getFullName());

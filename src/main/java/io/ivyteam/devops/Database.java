@@ -1,12 +1,18 @@
 package io.ivyteam.devops;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Database {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Database.class);
 
   private static final String NAME = "github.db";
 
@@ -16,6 +22,7 @@ public class Database {
   }
 
   public static void create() {
+    LOGGER.info("Create database");
     try (var c = connection()) {
       try (var stmt = c.createStatement()) {
         var sql = """
@@ -33,6 +40,17 @@ public class Database {
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
+    }
+  }
+
+  public static void delete() {
+    if (exists()) {
+      try {
+        LOGGER.info("Delete database");
+        Files.delete(Path.of(NAME));
+      } catch (IOException ex) {
+        throw new RuntimeException(ex);
+      }
     }
   }
 
