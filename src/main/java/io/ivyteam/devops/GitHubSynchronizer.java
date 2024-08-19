@@ -26,16 +26,15 @@ public class GitHubSynchronizer {
           int licence;
           try {
             licence = repo.getFileContent("LICENSE") == null ? 0 : 1;
-          } catch (GHFileNotFoundException ex) {
+          } catch (GHFileNotFoundException e) {
             licence = 0;
           }
           stmt.setInt(4, licence);
           stmt.execute();
         }
       }
-
-    } catch (IOException | SQLException e) {
-      System.err.println(e.getClass().getName() + ": " + e.getMessage());
+    } catch (IOException | SQLException ex) {
+      throw new RuntimeException(ex);
     }
   }
 
