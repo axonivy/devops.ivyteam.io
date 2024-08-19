@@ -21,30 +21,12 @@ pipeline {
     }
 
     stage('test') {
-      agent {
-        dockerfile {
-          filename 'Dockerfile.maven'
-        }
-        reuseNode true
-      }
-
       steps {
         script {
-          maven cmd: "clean install -Pproduction"
-        }
-        junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/surefire-reports/**/*.xml'
-        recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
-        recordIssues tools: [mavenConsole()]
-      }
-    }
+          docker.build('maven-build', '-f Dockerfile.maven .').inside {
+            maven cmd: "clean install -Pproduction"
+          }
 
-    stage('deploy') {
-      agent {
-        reuseNode true
-      }
-
-      steps {
-        script {
           def image = docker.build("ivyteam-devops:latest", ".")
           if (env.BRANCH_NAME == 'master') {
             docker.withRegistry('https://docker-registry.ivyteam.io', 'docker-registry.ivyteam.io') {            
@@ -52,6 +34,10 @@ pipeline {
             }
           }
         }
+
+        junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/surefire-reports/**/*.xml'
+        recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
+        recordIssues tools: [mavenConsole()]
       }
     }
   }
