@@ -25,7 +25,6 @@ pipeline {
         dockerfile {
           filename 'Dockerfile.maven'
         }
-        reu
       }
 
       steps {
