@@ -3,7 +3,7 @@
 # top-most EditorConfig file
 root = true
 
-[*.{css,js,json,xml}]
+[*.{css,js,json,xml,java}]
 end_of_line = lf
 indent_style = space
 indent_size = 2
@@ -14,4 +14,3 @@ end_of_line = lf
 indent_style = space
 indent_size = 2
 insert_final_newline = true
-
