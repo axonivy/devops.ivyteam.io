@@ -20,7 +20,7 @@ pipeline {
       }
     }
 
-    stage('test') {
+    stage('build') {
       steps {
         script {
           docker.build('maven-build', '-f Dockerfile.maven .').inside {
