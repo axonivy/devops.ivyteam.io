@@ -1,0 +1,17 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*.{css,js,json,xml}]
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+
+[{Jenkinsfile,README.md}]
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+
