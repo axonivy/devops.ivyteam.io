@@ -29,27 +29,24 @@ pipeline {
 
       steps {
         script {
-          maven cmd: "test"
+          maven cmd: "clean install"
         }
         junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/surefire-reports/**/*.xml'
+        recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
+        recordIssues tools: [mavenConsole()]
       }
     }
 
     stage('build') {
       steps {
         script {
-          configFileProvider([configFile(fileId: 'global-maven-settings', variable: 'GLOBAL_MAVEN_SETTINGS')]) {
-            sh "cp $GLOBAL_MAVEN_SETTINGS settings.xml"
-            def image = docker.build("ivyteam-devops:latest", ".")
-            if (env.BRANCH_NAME == 'master') {
-              docker.withRegistry('https://docker-registry.ivyteam.io', 'docker-registry.ivyteam.io') {            
-                image.push()
-              }
+          def image = docker.build("ivyteam-devops:latest", ".")
+          if (env.BRANCH_NAME == 'master') {
+            docker.withRegistry('https://docker-registry.ivyteam.io', 'docker-registry.ivyteam.io') {            
+              image.push()
             }
-          }
-        }
-        recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
-        recordIssues tools: [mavenConsole()]
+          }          
+        }        
       }
     }
   }
