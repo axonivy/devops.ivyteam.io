@@ -1,5 +1,6 @@
 package io.ivyteam.devops.db;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -8,11 +9,10 @@ import java.sql.SQLException;
 
 public class Database {
 
-  private static final String NAME = "github.db";
+  private static final Path PATH = Path.of("data", "github.db");
 
   public static boolean exists() {
-    var path = Path.of(NAME);
-    return Files.exists(path);
+    return Files.exists(PATH);
   }
 
   public static void create() {
@@ -54,8 +54,14 @@ public class Database {
     }
     try (var c = connection()) {
       try (var stmt = c.createStatement()) {
-        stmt.execute("DROP TABLE pull_request;");
-        stmt.execute("DROP TABLE repository;");
+        var sql = """
+            PRAGMA writable_schema = 1;
+            DELETE FROM sqlite_master;
+            PRAGMA writable_schema = 0;
+            VACUUM;
+            PRAGMA integrity_check;
+            """;
+        stmt.execute(sql);
       } catch (SQLException ex) {
         throw new RuntimeException(ex);
       }
@@ -66,9 +72,10 @@ public class Database {
 
   public static Connection connection() {
     try {
+      Files.createDirectories(PATH.getParent());
       Class.forName("org.sqlite.JDBC");
-      return DriverManager.getConnection("jdbc:sqlite:" + NAME);
-    } catch (ClassNotFoundException | SQLException ex) {
+      return DriverManager.getConnection("jdbc:sqlite:" + PATH);
+    } catch (ClassNotFoundException | SQLException | IOException ex) {
       throw new RuntimeException(ex);
     }
   }
