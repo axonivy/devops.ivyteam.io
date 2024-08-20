@@ -1,6 +1,5 @@
 package io.ivyteam.devops.db;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -55,12 +54,8 @@ public class Database {
     }
     try (var c = connection()) {
       try (var stmt = c.createStatement()) {
-
-        var sql = """
-             DROP TABLE IF EXISTS pull_request;
-             DROP TABLE IF EXISTS repository;             
-            """;
-        stmt.execute(sql);
+        stmt.execute("DROP TABLE pull_request;");
+        stmt.execute("DROP TABLE repository;");
       } catch (SQLException ex) {
         throw new RuntimeException(ex);
       }
