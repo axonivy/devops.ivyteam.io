@@ -13,7 +13,7 @@ public class GitHubProvider {
     var file = System.getProperty("GITHUB.TOKEN.FILE", "github.token");
     var path = Path.of(file);
     try {
-      var token = Files.readString(path);
+      var token = Files.readString(path).strip();
       return new GitHubBuilder()
               .withOAuthToken(token)
               .build();
