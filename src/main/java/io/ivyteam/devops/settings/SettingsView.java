@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.settings;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -7,7 +7,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.Route;
 
-import io.ivyteam.devops.GitHubSynchronizer.Progress;
+import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.github.GitHubSynchronizer;
+import io.ivyteam.devops.github.GitHubSynchronizer.Progress;
+import io.ivyteam.devops.view.View;
 
 @Route("/settings")
 public class SettingsView extends View {
@@ -31,16 +34,13 @@ public class SettingsView extends View {
     progressBar.setVisible(false);
     progressBar.setMaxWidth("50%");
 
-    //var progressBarLabelValue = new Span("50%");
-    //var progressBarLabel = new HorizontalLayout(progressBarLabelText, progressBarLabelValue);
-    //progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);
-    
     div.add(button);
     div.add(progressBarLabelText, progressBar);
 
     setContent(div);
   }
 
+  @Override
   public String title() {
     return "Settings";
   }

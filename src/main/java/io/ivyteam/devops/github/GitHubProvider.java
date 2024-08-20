@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.github;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,26 +1,14 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.repo;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.ivyteam.devops.db.Database;
+
 public class RepoRepository {
 
   public static final RepoRepository INSTANCE = new RepoRepository();
-
-  public record Repo(String name, boolean archived, int openPullRequests, boolean license, String settingsLog, List<PullRequest> prs) {
-
-    public String link() {
-      return "/repository/" + name;
-    }
-  }
-
-  public record PullRequest(String repository, long id, String title, String user) {
-
-    public String ghLink() {
-      return "https://github.com/" + repository + "/pull/" + id;
-    }
-  }
 
   public List<Repo> all() {
     try (var connection = Database.connection()) {
@@ -35,10 +23,10 @@ public class RepoRepository {
             var settingsLog = result.getString("settingsLog");
 
             var prs = new ArrayList<PullRequest>();
-            try (var stmtPr = connection.prepareStatement("SELECT * FROM pull_request WHERE repository = ?")) {              
+            try (var stmtPr = connection.prepareStatement("SELECT * FROM pull_request WHERE repository = ?")) {
               stmtPr.setString(1, name);
               try (var resultPr = stmtPr.executeQuery()) {
-                while (resultPr.next()) {                  
+                while (resultPr.next()) {
                   var prName = resultPr.getString("title");
                   var prUser = resultPr.getString("user");
                   var prId = resultPr.getLong("id");
@@ -51,6 +39,33 @@ public class RepoRepository {
             repos.add(repo);
           }
           return repos;
+        }
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public void create(Repo repo) {
+    try (var connection = Database.connection()) {
+      try (var stmt = connection.prepareStatement(
+          "INSERT INTO repository (name, archived, openPullRequests, license, settingsLog) VALUES (?, ?, ?, ?, ?)")) {
+        stmt.setString(1, repo.name());
+        stmt.setInt(2, repo.archived() ? 1 : 0);
+        stmt.setInt(3, repo.openPullRequests());
+        stmt.setInt(4, repo.license() ? 1 : 0);
+        stmt.setString(5, repo.settingsLog());
+        stmt.execute();
+
+        for (var pr : repo.prs()) {
+          try (var s = connection
+              .prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {
+            s.setString(1, repo.name());
+            s.setLong(2, pr.id());
+            s.setString(3, pr.title());
+            s.setString(4, pr.user());
+            s.execute();
+          }
         }
       }
     } catch (SQLException ex) {
