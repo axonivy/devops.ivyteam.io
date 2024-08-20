@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.repo;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -7,13 +7,13 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
 
-import io.ivyteam.devops.RepoRepository.PullRequest;
+import io.ivyteam.devops.view.View;
 
 @Route("/repository")
 public class RepoView extends View implements HasUrlParameter<String> {
 
   @Override
-  String title() {
+  public String title() {
     return "Repository";
   }
 
@@ -27,20 +27,14 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var grid = new Grid<PullRequest>();
     grid.setItems(repo.prs());
 
-    /*grid
-        .addColumn(PullRequest::title)
+    grid.addColumn(LitRenderer.<PullRequest>of("""
+           <a href="${item.link}">${item.title}</a>
+        """)
+        .withProperty("link", pr -> pr.ghLink())
+        .withProperty("title", pr -> pr.title()))
         .setHeader("Title")
         .setWidth("70%")
-        .setSortable(true);*/
-
-    grid.addColumn(LitRenderer.<PullRequest> of("""
-          <a href="${item.link}">${item.title}</a>
-       """)
-       .withProperty("link", pr -> pr.ghLink())
-       .withProperty("title", pr -> pr.title()))
-       .setHeader("Title")
-       .setWidth("70%")
-       .setSortable(true);
+        .setSortable(true);
 
     grid
         .addColumn(PullRequest::user)

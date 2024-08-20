@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.view;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -33,5 +33,5 @@ public abstract class View extends AppLayout {
     return sideNav;
   }
 
-  abstract String title();
+  public abstract String title();
 }

@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.github;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,13 +7,13 @@ import java.util.List;
 import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHRepository;
 
-public class RepoConfigurator {
+public class GitHubRepoConfigurator {
 
   private final GHRepository repo;
   private final boolean dry;
   private final List<String> log = new ArrayList<String>();
 
-  public RepoConfigurator(GHRepository repo, boolean dry) {
+  public GitHubRepoConfigurator(GHRepository repo, boolean dry) {
     this.repo = repo;
     this.dry = dry;
   }
@@ -32,11 +32,7 @@ public class RepoConfigurator {
     return log;
   }
 
-  public void synch() {
-
-  }
-
-  RepoConfigurator deleteHeadBranchOnMerge() throws IOException {
+  private GitHubRepoConfigurator deleteHeadBranchOnMerge() throws IOException {
     if (!repo.isDeleteBranchOnMerge()) {
       log("delete banch on merge");
       if (!dry) {
@@ -46,7 +42,7 @@ public class RepoConfigurator {
     return this;
   }
 
-  RepoConfigurator protectBranches() throws IOException {
+  private GitHubRepoConfigurator protectBranches() throws IOException {
     for (var branch : repo.getBranches().values()) {
       if (!branch.getName().equals("master") && !branch.getName().startsWith("release/")) {
         continue;
@@ -65,7 +61,7 @@ public class RepoConfigurator {
     return this;
   }
 
-  RepoConfigurator deleteHooks() throws IOException {
+  private GitHubRepoConfigurator deleteHooks() throws IOException {
     for (var hook : repo.getHooks()) {
       log("delete hook " + hook.getUrl());
       if (!dry) {
@@ -75,7 +71,7 @@ public class RepoConfigurator {
     return this;
   }
 
-  RepoConfigurator disableWiki() throws IOException {
+  private GitHubRepoConfigurator disableWiki() throws IOException {
     if (repo.hasWiki()) {
       log("disable wiki");
       if (!dry) {
@@ -85,17 +81,7 @@ public class RepoConfigurator {
     return this;
   }
 
-  RepoConfigurator disableIssues() throws IOException {
-    if (repo.hasIssues()) {
-      log("disable issues");
-      if (!dry) {
-        repo.enableIssueTracker(false);
-      }
-    }
-    return this;
-  }
-
-  RepoConfigurator enableIssues() throws IOException {
+  private GitHubRepoConfigurator enableIssues() throws IOException {
     if (!repo.hasIssues()) {
       log("enable issues");
       if (!dry) {
@@ -105,7 +91,7 @@ public class RepoConfigurator {
     return this;
   }
 
-  RepoConfigurator disableProjects() throws IOException {
+  private GitHubRepoConfigurator disableProjects() throws IOException {
     if (repo.hasProjects()) {
       log("disable projects");
       if (!dry) {

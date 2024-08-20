@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.github;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -8,7 +8,13 @@ import java.util.stream.Collectors;
 
 import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHIssueState;
+import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHRepository;
+
+import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.repo.PullRequest;
+import io.ivyteam.devops.repo.Repo;
+import io.ivyteam.devops.repo.RepoRepository;
 
 public class GitHubSynchronizer {
 
@@ -19,7 +25,7 @@ public class GitHubSynchronizer {
   }
 
   public void run() {
-    progress.accept(new Progress("Delete Database", 0));    
+    progress.accept(new Progress("Delete Database", 0));
     Database.delete();
     progress.accept(new Progress("Create Database", 0));
     Database.create();
@@ -36,46 +42,50 @@ public class GitHubSynchronizer {
         var percent = (counter * 100 / allRepos) / 100;
         progress.accept(new Progress(text, percent));
 
-        var settingsLog = new RepoConfigurator(repo, true).analyze().stream().collect(Collectors.joining("\n"));
+        var settingsLog = new GitHubRepoConfigurator(repo, true).analyze().stream().collect(Collectors.joining("\n"));
 
-        try (var stmt = connection.prepareStatement(
-            "INSERT INTO repository (name, archived, openPullRequests, license, settingsLog) VALUES (?, ?, ?, ?, ?)")) {
-          stmt.setString(1, repo.getFullName());
-          stmt.setInt(2, repo.isArchived() ? 1 : 0);
-          
-          var prs = repo.getPullRequests(GHIssueState.OPEN);
-          stmt.setInt(3, prs.size());
+        var repository = new RepoRepository();
 
-          for (var pr : prs) {            
-            var title = pr.getTitle();
-            var user = pr.getUser().getLogin();
-            var id = pr.getNumber();
+        var name = repo.getFullName();
+        var archived = repo.isArchived();
+        boolean licence = hasLicence(repo);
+        var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
+        var openPullRequests = gitHubPrs.size();
 
-            try (var s = connection.prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {              
-              s.setString(1, repo.getFullName());
-              s.setLong(2, id);
-              s.setString(3, title);
-              s.setString(4, user);
-              s.execute();
-            }            
-          }
+        var prs = gitHubPrs.stream()
+            .map(this::toPullRequest)
+            .toList();
 
-          int licence;
-          try {
-            licence = repo.getFileContent("LICENSE") == null ? 0 : 1;
-          } catch (GHFileNotFoundException e) {
-            licence = 0;
-          }
-          stmt.setInt(4, licence);
-          stmt.setString(5, settingsLog);
-          stmt.execute();
-        }
+        var rr = new Repo(name, archived, openPullRequests, licence, settingsLog, prs);
+        repository.create(rr);
       }
     } catch (IOException | SQLException ex) {
       throw new RuntimeException(ex);
     }
 
     progress.accept(new Progress("Indexing finished", 1));
+  }
+
+  private boolean hasLicence(GHRepository repo) throws IOException {
+    boolean licence;
+    try {
+      licence = repo.getFileContent("LICENSE") != null;
+    } catch (GHFileNotFoundException e) {
+      licence = false;
+    }
+    return licence;
+  }
+
+  private PullRequest toPullRequest(GHPullRequest pr) {
+    try {
+      var title = pr.getTitle();
+      var user = pr.getUser().getLogin();
+      var id = pr.getNumber();
+      var p = new PullRequest(pr.getRepository().getFullName(), id, title, user);
+      return p;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static List<GHRepository> reposFor(String orgName) {
