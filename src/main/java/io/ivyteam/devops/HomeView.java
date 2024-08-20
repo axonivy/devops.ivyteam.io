@@ -1,6 +1,7 @@
 package io.ivyteam.devops;
 
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.RepoRepository.Repo;
@@ -9,16 +10,18 @@ import io.ivyteam.devops.RepoRepository.Repo;
 public class HomeView extends View {
 
   public HomeView() {
-    new GitHubSynchronizer().run();
     var repos = RepoRepository.INSTANCE.all();
 
     var grid = new Grid<Repo>();
     grid.setItems(repos);
-    grid
-        .addColumn(Repo::name)
-        .setHeader("Name")
-        .setWidth("40%")
-        .setSortable(true);
+    grid.addColumn(LitRenderer.<Repo> of("""
+          <a href="${item.link}">${item.name}</a>
+       """)
+       .withProperty("link", p -> p.link())
+       .withProperty("name", p -> p.name()))
+       .setHeader("Name")
+       .setWidth("40%")
+       .setSortable(true);
 
     grid
         .addColumn(Repo::archived)
