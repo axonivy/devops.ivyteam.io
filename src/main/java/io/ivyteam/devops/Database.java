@@ -25,7 +25,8 @@ public class Database {
                name VARCHAR(200) PRIMARY KEY NOT NULL,
                archived INTEGER NOT NULL,
                openPullRequests INTEGER NOT NULL,
-               license INTEGER NOT NULL
+               license INTEGER NOT NULL,
+               settingsLog TEXT NULL
              );
 
              CREATE TABLE pull_request

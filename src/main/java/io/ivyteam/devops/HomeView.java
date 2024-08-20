@@ -38,7 +38,13 @@ public class HomeView extends View {
     grid
         .addColumn(Repo::license)
         .setHeader("License")
-        .setWidth("40%")
+        .setWidth("10%")
+        .setSortable(true);
+
+    grid
+        .addColumn(Repo::settingsLog)
+        .setHeader("Settings")
+        .setWidth("30%")
         .setSortable(true);
 
     grid.setHeightFull();

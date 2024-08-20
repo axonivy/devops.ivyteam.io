@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHRepository;
-
-import com.vaadin.flow.component.map.configuration.geometry.Point;
 
 public class GitHubSynchronizer {
 
@@ -26,6 +25,7 @@ public class GitHubSynchronizer {
     Database.create();
 
     try (var connection = Database.connection()) {
+      progress.accept(new Progress("Loading repositories from GitHub Organization axonivy", 0));
       var repos = reposFor("axonivy");
       double counter = 0;
       double allRepos = repos.size();
@@ -36,8 +36,10 @@ public class GitHubSynchronizer {
         var percent = (counter * 100 / allRepos) / 100;
         progress.accept(new Progress(text, percent));
 
+        var settingsLog = new RepoConfigurator(repo, true).analyze().stream().collect(Collectors.joining("\n"));
+
         try (var stmt = connection.prepareStatement(
-            "INSERT INTO repository (name, archived, openPullRequests, license) VALUES (?, ?, ?, ?)")) {
+            "INSERT INTO repository (name, archived, openPullRequests, license, settingsLog) VALUES (?, ?, ?, ?, ?)")) {
           stmt.setString(1, repo.getFullName());
           stmt.setInt(2, repo.isArchived() ? 1 : 0);
           
@@ -65,6 +67,7 @@ public class GitHubSynchronizer {
             licence = 0;
           }
           stmt.setInt(4, licence);
+          stmt.setString(5, settingsLog);
           stmt.execute();
         }
       }
@@ -78,7 +81,15 @@ public class GitHubSynchronizer {
   private static List<GHRepository> reposFor(String orgName) {
     try {
       var org = GitHubProvider.get().getOrganization(orgName);
-      return List.copyOf(org.getRepositories().values()).stream()
+      return List.copyOf(org.getRepositories().values())
+          .stream()
+          .map(r -> {
+            try {
+              return org.getRepository(r.getName());
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          })
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
