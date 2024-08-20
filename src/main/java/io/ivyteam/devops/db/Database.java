@@ -50,13 +50,23 @@ public class Database {
   }
 
   public static void delete() {
-    if (exists()) {
-      try {        
-        Files.delete(Path.of(NAME));
-      } catch (IOException ex) {
+    if (!exists()) {
+      return;
+    }
+    try (var c = connection()) {
+      try (var stmt = c.createStatement()) {
+
+        var sql = """
+             DROP TABLE IF EXISTS pull_request;
+             DROP TABLE IF EXISTS repository;             
+            """;
+        stmt.execute(sql);
+      } catch (SQLException ex) {
         throw new RuntimeException(ex);
       }
-    }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }    
   }
 
   public static Connection connection() {
