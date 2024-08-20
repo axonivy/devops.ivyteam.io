@@ -1,6 +1,5 @@
 package io.ivyteam.devops;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEvent;
@@ -9,7 +8,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
 
 import io.ivyteam.devops.RepoRepository.PullRequest;
-import io.ivyteam.devops.RepoRepository.Repo;
 
 @Route("/repository")
 public class RepoView extends View implements HasUrlParameter<String> {

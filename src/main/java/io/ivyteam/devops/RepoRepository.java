@@ -8,7 +8,7 @@ public class RepoRepository {
 
   public static final RepoRepository INSTANCE = new RepoRepository();
 
-  public record Repo(String name, boolean archived, int openPullRequests, boolean license, List<PullRequest> prs) {
+  public record Repo(String name, boolean archived, int openPullRequests, boolean license, String settingsLog, List<PullRequest> prs) {
 
     public String link() {
       return "/repository/" + name;
@@ -32,6 +32,7 @@ public class RepoRepository {
             var archived = result.getInt("archived") == 1;
             var openPullRequests = result.getInt("openPullRequests");
             var license = result.getInt("license") == 1;
+            var settingsLog = result.getString("settingsLog");
 
             var prs = new ArrayList<PullRequest>();
             try (var stmtPr = connection.prepareStatement("SELECT * FROM pull_request WHERE repository = ?")) {              
@@ -46,7 +47,7 @@ public class RepoRepository {
               }
             }
 
-            var repo = new Repo(name, archived, openPullRequests, license, prs);
+            var repo = new Repo(name, archived, openPullRequests, license, settingsLog, prs);
             repos.add(repo);
           }
           return repos;
