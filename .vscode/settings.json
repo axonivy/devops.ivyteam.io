@@ -1,0 +1,10 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.cleanup.actions": [
+        "renameFileToType",
+        "addOverride"
+    ],
+    "java.saveActions.organizeImports": true,
+    "java.maven.downloadSources": false,
+    "editor.formatOnSave": true
+}
