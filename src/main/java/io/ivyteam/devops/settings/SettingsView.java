@@ -1,8 +1,9 @@
 package io.ivyteam.devops.settings;
 
+import java.util.function.Consumer;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -37,12 +38,20 @@ public class SettingsView extends View {
 
     reindexButton = new Button("Reindex");
     var ui = UI.getCurrent();
+
+    reindexButton.setVisible(!GitHubSynchronizer.INSTANCE.isRunning());
+
+    if (GitHubSynchronizer.INSTANCE.isRunning()) {
+      updateUi(ui, new Progress("Reindexing running", 0.1));
+      Consumer<Progress> listener = progress -> updateUi(ui, progress);
+      GitHubSynchronizer.INSTANCE.addListener(listener);
+    }
+
     reindexButton.addClickListener(clickEvent -> {
-      if (synchronizer != null) {
-        return;
-      }
-      reindexButton.setEnabled(false);
-      synchronizer = new Thread(() -> new GitHubSynchronizer(progress -> updateUi(ui, progress)).run());
+      reindexButton.setVisible(false);
+      Consumer<Progress> listener = progress -> updateUi(ui, progress);
+      GitHubSynchronizer.INSTANCE.addListener(listener);
+      synchronizer = new Thread(() -> GitHubSynchronizer.INSTANCE.run());
       synchronizer.start();
     });
 
@@ -60,26 +69,11 @@ public class SettingsView extends View {
     div.add(formLayout);
 
     progressBarLabelText = new NativeLabel();
-    progressBarLabelText.setVisible(false);
+    progressBarLabelText.setVisible(GitHubSynchronizer.INSTANCE.isRunning());
     progressBar = new ProgressBar();
-    progressBar.setVisible(false);
+    progressBar.setVisible(GitHubSynchronizer.INSTANCE.isRunning());
 
-    Dialog dialog = new Dialog();
-    dialog.setWidth("400px");
-
-    dialog.setHeaderTitle("Reindex Github Repositories");
-
-    VerticalLayout dialogLayout = new VerticalLayout();
-    dialog.add(dialogLayout);
-    dialogLayout.add(progressBarLabelText, progressBar);
-
-    Button cancelButton = new Button("Cancel", e -> dialog.close());
-    dialog.getFooter().add(cancelButton);
-    dialog.getFooter().add(reindexButton);
-
-    Button button = new Button("Reindex", e -> dialog.open());
-
-    div.add(dialog, button);
+    div.add(reindexButton, progressBarLabelText, progressBar);
 
     setContent(div);
   }
@@ -103,7 +97,9 @@ public class SettingsView extends View {
       progressBar.setValue(progress.percent());
 
       if (progress.percent() == 1) {
-        reindexButton.setEnabled(true);
+        reindexButton.setVisible(true);
+        progressBar.setVisible(false);
+        progressBarLabelText.setVisible(false);
       }
     });
   }

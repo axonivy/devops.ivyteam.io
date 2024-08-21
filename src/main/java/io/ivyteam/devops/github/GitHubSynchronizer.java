@@ -3,6 +3,7 @@ package io.ivyteam.devops.github;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -21,22 +22,30 @@ import io.ivyteam.devops.settings.SettingsManager;
 
 public class GitHubSynchronizer {
 
-  private final Consumer<Progress> progress;
+  public static final GitHubSynchronizer INSTANCE = new GitHubSynchronizer();
 
-  public GitHubSynchronizer(Consumer<Progress> progress) {
-    this.progress = progress;
+  private boolean isRunning = false;
+
+  private final List<Consumer<Progress>> progressListener = new CopyOnWriteArrayList<>();
+
+  public void addListener(Consumer<Progress> progress) {
+    progressListener.add(progress);
   }
 
-  public void run() {
-    progress.accept(new Progress("Delete Database", 0));
-    Database.delete();
-    progress.accept(new Progress("Create Database", 0));
-    Database.create();
+  public void removeListener(Consumer<Progress> progress) {
+    progressListener.remove(progress);
+  }
 
+  private void notify(String msg, double work) {
+    progressListener.forEach(listener -> listener.accept(new Progress(msg, work)));
+  }
+
+  public synchronized void run() {
+    isRunning = true;
     try (var connection = Database.connection()) {
       var org = SettingsManager.INSTANCE.get().gitHubOrg();
 
-      progress.accept(new Progress("Loading repositories from GitHub Organization " + org, 0));
+      notify("Loading repositories from GitHub Organization " + org, 0);
       var repos = reposFor(org);
       double counter = 0;
       double allRepos = repos.size();
@@ -45,15 +54,21 @@ public class GitHubSynchronizer {
 
         var text = "Indexing repository " + repo.getFullName() + " (" + (int) counter + "/" + (int) allRepos + ")";
         var percent = (counter * 100 / allRepos) / 100;
-        progress.accept(new Progress(text, percent));
+        notify(text, percent);
 
         synch(repo);
       }
+      notify("Indexing finished", 1);
     } catch (IOException | SQLException ex) {
       throw new RuntimeException(ex);
+    } finally {
+      isRunning = false;
+      progressListener.clear();
     }
+  }
 
-    progress.accept(new Progress("Indexing finished", 1));
+  public boolean isRunning() {
+    return isRunning;
   }
 
   public void synch(GHRepository repo) throws IOException {
@@ -121,8 +136,8 @@ public class GitHubSynchronizer {
   private static List<GHRepository> reposFor(String orgName) {
     try {
       var org = GitHubProvider.get().getOrganization(orgName);
-      return List.copyOf(org.getRepositories().values())
-          .stream()
+      return List.copyOf(org.getRepositories().values()).stream()
+          // .limit(10)
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
