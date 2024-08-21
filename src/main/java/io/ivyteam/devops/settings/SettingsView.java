@@ -42,7 +42,7 @@ public class SettingsView extends View {
     reindexButton.setVisible(!GitHubSynchronizer.INSTANCE.isRunning());
 
     if (GitHubSynchronizer.INSTANCE.isRunning()) {
-      updateUi(ui, new Progress("Reindexing running", 0.1));
+      updateUi(ui, GitHubSynchronizer.INSTANCE.getProgress());
       Consumer<Progress> listener = progress -> updateUi(ui, progress);
       GitHubSynchronizer.INSTANCE.addListener(listener);
     }
