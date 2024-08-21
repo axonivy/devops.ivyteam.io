@@ -16,7 +16,7 @@ public class Database {
   }
 
   public static void create() {
-    try (var c = connection()) {
+    try (var c = dbConnection()) {
       try (var stmt = c.createStatement()) {
         var sql = """
              CREATE TABLE repository
@@ -36,7 +36,7 @@ public class Database {
                user VARCHAR(200) NOT NULL,
 
                PRIMARY KEY(repository, id),
-               FOREIGN KEY(repository) REFERENCES repository(name)
+               FOREIGN KEY(repository) REFERENCES repository(name) ON DELETE CASCADE
              );
 
             CREATE TABLE branch
@@ -70,6 +70,13 @@ public class Database {
   }
 
   public static Connection connection() {
+    if (!exists()) {
+      create();
+    }
+    return dbConnection();
+  }
+
+  private static Connection dbConnection() {
     try {
       Files.createDirectories(PATH.getParent());
       Class.forName("org.sqlite.JDBC");

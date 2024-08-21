@@ -18,7 +18,7 @@ public class GitHubRepoConfigurator {
     this.dry = dry;
   }
 
-  public List<String> analyze() {
+  public List<String> run() {
     try {
       deleteHeadBranchOnMerge();
       disableProjects();

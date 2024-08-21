@@ -29,6 +29,6 @@ public class Application implements AppShellConfigurator {
   @Override
   public void configurePage(AppShellSettings settings) {
     settings.setPageTitle("ivyTeam DevOps");
-    settings.addFavIcon("icon", "icons/icon.png", "80x80");
+    settings.addFavIcon("icon", "icons/axonivy.svg", "80x80");
   }
 }

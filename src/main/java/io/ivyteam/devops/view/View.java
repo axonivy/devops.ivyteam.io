@@ -29,8 +29,8 @@ public abstract class View extends AppLayout {
   private SideNav getSideNav() {
     var sideNav = new SideNav();
     sideNav.addItem(new SideNavItem("Dashboard", "/", VaadinIcon.DASHBOARD.create()));
-    sideNav.addItem(new SideNavItem("Settings", "/settings", VaadinIcon.LIST.create()));
     sideNav.addItem(new SideNavItem("Branches", "/branches", VaadinIcon.CODE.create()));
+    sideNav.addItem(new SideNavItem("Settings", "/settings", VaadinIcon.LIST.create()));
     return sideNav;
   }
 

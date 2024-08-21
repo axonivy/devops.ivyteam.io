@@ -17,6 +17,7 @@ import io.ivyteam.devops.repo.Branch;
 import io.ivyteam.devops.repo.PullRequest;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
+import io.ivyteam.devops.settings.SettingsManager;
 
 public class GitHubSynchronizer {
 
@@ -33,8 +34,10 @@ public class GitHubSynchronizer {
     Database.create();
 
     try (var connection = Database.connection()) {
-      progress.accept(new Progress("Loading repositories from GitHub Organization axonivy", 0));
-      var repos = reposFor("axonivy");
+      var org = SettingsManager.get().gitHubOrg();
+
+      progress.accept(new Progress("Loading repositories from GitHub Organization " + org, 0));
+      var repos = reposFor(org);
       double counter = 0;
       double allRepos = repos.size();
       for (var repo : repos) {
@@ -44,31 +47,39 @@ public class GitHubSynchronizer {
         var percent = (counter * 100 / allRepos) / 100;
         progress.accept(new Progress(text, percent));
 
-        var settingsLog = new GitHubRepoConfigurator(repo, true).analyze().stream().collect(Collectors.joining("\n"));
-
-        var repository = new RepoRepository();
-
-        var name = repo.getFullName();
-        var archived = repo.isArchived();
-        boolean licence = hasLicence(repo);
-        var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
-        var openPullRequests = gitHubPrs.size();
-
-        var prs = gitHubPrs.stream()
-            .map(this::toPullRequest)
-            .toList();
-
-        var branches = repo.getBranches().values().stream()
-            .map(b -> toBranch(b, repo)).toList();
-
-        var rr = new Repo(name, archived, openPullRequests, licence, settingsLog, prs, branches);
-        repository.create(rr);
+        synch(repo);
       }
     } catch (IOException | SQLException ex) {
       throw new RuntimeException(ex);
     }
 
     progress.accept(new Progress("Indexing finished", 1));
+  }
+
+  public void synch(GHRepository repo) throws IOException {
+    var org = GitHubProvider.get().getOrganization(repo.getOwnerName());
+    repo = org.getRepository(repo.getName()); // reload to load all settings
+
+    var settingsLog = new GitHubRepoConfigurator(repo, true).run().stream().collect(Collectors.joining("\n"));
+
+    var repository = new RepoRepository();
+
+    var name = repo.getFullName();
+    var archived = repo.isArchived();
+    boolean licence = hasLicence(repo);
+    var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
+    var openPullRequests = gitHubPrs.size();
+
+    var prs = gitHubPrs.stream()
+        .map(this::toPullRequest)
+        .toList();
+
+    var ghRepo = repo;
+    var branches = repo.getBranches().values().stream()
+        .map(b -> toBranch(b, ghRepo)).toList();
+
+    var rr = new Repo(name, archived, openPullRequests, licence, settingsLog, prs, branches);
+    repository.create(rr);
   }
 
   private boolean hasLicence(GHRepository repo) throws IOException {
@@ -112,13 +123,7 @@ public class GitHubSynchronizer {
       var org = GitHubProvider.get().getOrganization(orgName);
       return List.copyOf(org.getRepositories().values())
           .stream()
-          .map(r -> {
-            try {
-              return org.getRepository(r.getName());
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          })
+          // .limit(10)
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
