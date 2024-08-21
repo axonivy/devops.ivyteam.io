@@ -123,7 +123,6 @@ public class GitHubSynchronizer {
       var org = GitHubProvider.get().getOrganization(orgName);
       return List.copyOf(org.getRepositories().values())
           .stream()
-          // .limit(10)
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
