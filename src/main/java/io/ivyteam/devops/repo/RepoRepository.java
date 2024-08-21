@@ -12,7 +12,7 @@ public class RepoRepository {
 
   public List<Repo> all() {
     try (var connection = Database.connection()) {
-      try (var stmt = connection.prepareStatement("SELECT * FROM repository")) {
+      try (var stmt = connection.prepareStatement("SELECT * FROM repository ORDER BY name")) {
         try (var result = stmt.executeQuery()) {
           var repos = new ArrayList<Repo>();
           while (result.next()) {
@@ -60,6 +60,11 @@ public class RepoRepository {
 
   public void create(Repo repo) {
     try (var connection = Database.connection()) {
+      try (var stmt = connection.prepareStatement("DELETE FROM repository WHERE name = ?")) {
+        stmt.setString(1, repo.name());
+        stmt.execute();
+      }
+
       try (var stmt = connection.prepareStatement(
           "INSERT INTO repository (name, archived, openPullRequests, license, settingsLog) VALUES (?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
