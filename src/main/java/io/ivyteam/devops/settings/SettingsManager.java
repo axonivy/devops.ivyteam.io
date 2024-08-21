@@ -6,31 +6,41 @@ import java.nio.file.Path;
 
 public class SettingsManager {
 
-  private static final Path PATH = Path.of("data", "devops.properties");
+  public static final SettingsManager INSTANCE = new SettingsManager();
 
-  public static Settings get() {
+  private final Path path;
+
+  private SettingsManager() {
+    this(Path.of("data", "devops.properties"));
+  }
+
+  SettingsManager(Path path) {
+    this.path = path;
+  }
+
+  public Settings get() {
     var settings = new Settings();
-    if (!Files.exists(PATH)) {
+    if (!Files.exists(path)) {
       return settings;
     }
 
     var properties = new java.util.Properties();
-    try (var in = Files.newInputStream(PATH)) {
+    try (var in = Files.newInputStream(path)) {
       properties.load(in);
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
 
-    settings.gitHubOrg(properties.getProperty("github.org", ""));
-    settings.gitHubToken(properties.getProperty("github.token", ""));
+    settings.gitHubOrg(properties.getProperty(Settings.GITHUB_ORG, ""));
+    settings.gitHubToken(properties.getProperty(Settings.GITHUB_TOKEN, ""));
     return settings;
   }
 
-  public static void save(Settings settings) {
+  public void save(Settings settings) {
     var properties = new java.util.Properties();
-    properties.setProperty("github.org", settings.gitHubOrg());
-    properties.setProperty("github.token", settings.gitHubToken());
-    try (var out = Files.newOutputStream(PATH, java.nio.file.StandardOpenOption.CREATE)) {
+    properties.setProperty(Settings.GITHUB_ORG, settings.gitHubOrg());
+    properties.setProperty(Settings.GITHUB_TOKEN, settings.gitHubToken());
+    try (var out = Files.newOutputStream(path, java.nio.file.StandardOpenOption.CREATE)) {
       properties.store(out, null);
     } catch (IOException ex) {
       throw new RuntimeException(ex);
