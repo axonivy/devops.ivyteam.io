@@ -8,7 +8,7 @@ public class ReindexingJob {
 
   // 12am every day
   @Scheduled(cron = "0 0 0 * * ?")
-  public void trackOverduePayments() {
+  public void reindex() {
     new GitHubSynchronizer(progress -> System.out.println(progress.message())).run();
   }
 }
