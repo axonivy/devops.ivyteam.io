@@ -11,7 +11,7 @@ public class GitHubProvider {
 
   public static GitHub get() {
     try {
-      var token = SettingsManager.get().gitHubToken();
+      var token = SettingsManager.INSTANCE.get().gitHubToken();
       return new GitHubBuilder()
           .withOAuthToken(token)
           .build();

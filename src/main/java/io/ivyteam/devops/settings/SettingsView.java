@@ -31,7 +31,7 @@ public class SettingsView extends View {
   private static Thread synchronizer;
 
   public SettingsView() {
-    this.settings = SettingsManager.get();
+    this.settings = SettingsManager.INSTANCE.get();
 
     var div = new VerticalLayout();
 
@@ -87,7 +87,7 @@ public class SettingsView extends View {
   private void saveSettings() {
     settings.gitHubOrg(githubOrganization.getValue());
     settings.gitHubToken(githubToken.getValue());
-    SettingsManager.save(settings);
+    SettingsManager.INSTANCE.save(settings);
   }
 
   @Override

@@ -34,7 +34,7 @@ public class GitHubSynchronizer {
     Database.create();
 
     try (var connection = Database.connection()) {
-      var org = SettingsManager.get().gitHubOrg();
+      var org = SettingsManager.INSTANCE.get().gitHubOrg();
 
       progress.accept(new Progress("Loading repositories from GitHub Organization " + org, 0));
       var repos = reposFor(org);
