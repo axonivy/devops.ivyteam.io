@@ -26,6 +26,8 @@ public class GitHubSynchronizer {
 
   private boolean isRunning = false;
 
+  private Progress progress;
+
   private final List<Consumer<Progress>> progressListener = new CopyOnWriteArrayList<>();
 
   public void addListener(Consumer<Progress> progress) {
@@ -37,7 +39,12 @@ public class GitHubSynchronizer {
   }
 
   private void notify(String msg, double work) {
-    progressListener.forEach(listener -> listener.accept(new Progress(msg, work)));
+    this.progress = new Progress(msg, work);
+    progressListener.forEach(listener -> listener.accept(progress));
+  }
+
+  public Progress getProgress() {
+    return progress;
   }
 
   public synchronized void run() {
