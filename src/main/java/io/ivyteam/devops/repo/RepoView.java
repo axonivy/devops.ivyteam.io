@@ -4,19 +4,18 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
 
 import io.ivyteam.devops.branches.BranchesGrid;
+import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.view.View;
 
 @Route("/repository")
@@ -41,7 +40,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
     var prCounter = new Span("Pull Requests (" + repo.openPullRequests() + ")");
     var tabPrs = new Tab(prCounter);
-    var gridPrs = createGridPullRequests(repo);
+    var gridPrs = PullRequestGrid.create(repo.prs());
     tabSheet.add(tabPrs, gridPrs);
 
     var branchCounter = new Span("Branches (" + repo.branches().size() + ")");
@@ -91,26 +90,5 @@ public class RepoView extends View implements HasUrlParameter<String> {
     txt.getStyle().set("width", "100%");
     txt.setHeight("800px");
     return txt;
-  }
-
-  private Grid<PullRequest> createGridPullRequests(Repo repo) {
-    var grid = new Grid<PullRequest>();
-    grid.setItems(repo.prs());
-    grid.addColumn(LitRenderer.<PullRequest>of("""
-           <a href="${item.link}">${item.title}</a>
-        """)
-        .withProperty("link", pr -> pr.ghLink())
-        .withProperty("title", pr -> pr.title()))
-        .setHeader("Title")
-        .setWidth("70%")
-        .setSortable(true);
-
-    grid
-        .addColumn(PullRequest::user)
-        .setHeader("User")
-        .setWidth("30%")
-        .setSortable(true);
-    grid.setSizeFull();
-    return grid;
   }
 }
