@@ -46,7 +46,7 @@ public class Database {
               lastCommitAuthor VARCHAR(200) NOT NULL,
 
               PRIMARY KEY(repository, name),
-              FOREIGN KEY(repository) REFERENCES repository(name)
+              FOREIGN KEY(repository) REFERENCES repository(name) ON DELETE CASCADE
             );
             """;
         stmt.executeUpdate(sql);
