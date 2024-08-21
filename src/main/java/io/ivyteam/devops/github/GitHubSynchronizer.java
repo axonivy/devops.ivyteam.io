@@ -3,6 +3,7 @@ package io.ivyteam.devops.github;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -41,16 +42,15 @@ public class GitHubSynchronizer {
 
   private void notify(String msg, double work) {
     this.progress = new Progress(msg, work);
-    var iterator = progressListener.iterator();
-    while (iterator.hasNext()) {
-      var listener = iterator.next();
+    var remove = new ArrayList<Consumer<Progress>>();
+    for (var listener : progressListener) {
       try {
         listener.accept(progress);
       } catch (Exception ex) {
-        // ignore, maybe a UIDetachedException
-        iterator.remove();
+        remove.add(listener);
       }
     }
+    progressListener.removeAll(remove);
   }
 
   public Progress getProgress() {
