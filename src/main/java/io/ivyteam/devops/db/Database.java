@@ -38,6 +38,16 @@ public class Database {
                PRIMARY KEY(repository, id),
                FOREIGN KEY(repository) REFERENCES repository(name)
              );
+
+            CREATE TABLE branch
+            (
+              repository VARCHAR(200) NOT NULL,
+              name VARCHAR(200) NOT NULL,
+              lastCommitAuthor VARCHAR(200) NOT NULL,
+
+              PRIMARY KEY(repository, name),
+              FOREIGN KEY(repository) REFERENCES repository(name)
+            );
             """;
         stmt.executeUpdate(sql);
       } catch (SQLException ex) {
@@ -52,22 +62,11 @@ public class Database {
     if (!exists()) {
       return;
     }
-    try (var c = connection()) {
-      try (var stmt = c.createStatement()) {
-        var sql = """
-            PRAGMA writable_schema = 1;
-            DELETE FROM sqlite_master;
-            PRAGMA writable_schema = 0;
-            VACUUM;
-            PRAGMA integrity_check;
-            """;
-        stmt.execute(sql);
-      } catch (SQLException ex) {
-        throw new RuntimeException(ex);
-      }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }    
+    try {
+      Files.delete(PATH);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static Connection connection() {

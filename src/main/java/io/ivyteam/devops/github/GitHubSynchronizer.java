@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHRepository;
 
 import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.repo.Branch;
 import io.ivyteam.devops.repo.PullRequest;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
@@ -56,7 +58,10 @@ public class GitHubSynchronizer {
             .map(this::toPullRequest)
             .toList();
 
-        var rr = new Repo(name, archived, openPullRequests, licence, settingsLog, prs);
+        var branches = repo.getBranches().values().stream()
+            .map(b -> toBranch(b, repo)).toList();
+
+        var rr = new Repo(name, archived, openPullRequests, licence, settingsLog, prs, branches);
         repository.create(rr);
       }
     } catch (IOException | SQLException ex) {
@@ -83,6 +88,20 @@ public class GitHubSynchronizer {
       var id = pr.getNumber();
       var p = new PullRequest(pr.getRepository().getFullName(), id, title, user);
       return p;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Branch toBranch(GHBranch branch, GHRepository repo) {
+    try {
+      var lastCommit = repo.getCommit(branch.getSHA1());
+      var author = lastCommit.getAuthor();
+      var lastCommitAuthor = "?";
+      if (author != null) {
+        lastCommitAuthor = author.getLogin();
+      }
+      return new Branch(repo.getFullName(), branch.getName(), lastCommitAuthor);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
