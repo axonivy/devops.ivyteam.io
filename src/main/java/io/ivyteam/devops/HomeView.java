@@ -129,7 +129,7 @@ public class HomeView extends View {
 
   @Override
   public String title() {
-    return "Dashboard";
+    return "Repositories";
   }
 
   private Icon createIcon(VaadinIcon vaadinIcon) {
@@ -151,7 +151,7 @@ public class HomeView extends View {
   private void synch(Repo repo) {
     try {
       var ghRepo = GitHubProvider.get().getRepository(repo.name());
-      new GitHubSynchronizer(null).synch(ghRepo);
+      GitHubSynchronizer.INSTANCE.synch(ghRepo);
       grid.getDataProvider().refreshAll();
     } catch (IOException e) {
       throw new RuntimeException(e);
