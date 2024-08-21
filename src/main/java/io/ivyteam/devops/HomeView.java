@@ -34,7 +34,7 @@ public class HomeView extends View {
     var repos = RepoRepository.INSTANCE.all();
 
     grid = new Grid<>();
-    var dataView = grid.setItems(repos);
+    grid.setItems(repos);
 
     grid.addColumn(LitRenderer.<Repo>of("""
            <a href="${item.link}">${item.name}</a>
@@ -46,12 +46,6 @@ public class HomeView extends View {
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
-    var archivedColumn = grid
-        .addColumn(Repo::archived)
-        .setHeader("Archived")
-        .setWidth("10%")
-        .setSortable(true);
-
     grid
         .addComponentColumn(repo -> {
           var counter = new Span(String.valueOf(repo.openPullRequests()));
@@ -59,14 +53,26 @@ public class HomeView extends View {
           counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
           return counter;
         })
-        .setHeader("Open PRs")
+        .setHeader("PRs")
         .setWidth("10%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::openPullRequests));
 
     grid
         .addComponentColumn(repo -> {
-          if (repo.archived()) {
+          var counter = new Span(String.valueOf(repo.branches().size()));
+          counter.getElement().getThemeList().add("badge pill small contrast");
+          counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
+          return counter;
+        })
+        .setHeader("Branches")
+        .setWidth("10%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(r -> r.branches().size()));
+
+    grid
+        .addComponentColumn(repo -> {
+          if (repo.archived() || repo.privateRepo()) {
             return null;
           }
           if (repo.license() != null) {
@@ -111,7 +117,23 @@ public class HomeView extends View {
       return play;
     })
         .setHeader("Synch")
-        .setWidth("20%");
+        .setWidth("10%");
+
+    grid
+        .addComponentColumn(repo -> {
+          var layout = new HorizontalLayout();
+          if (repo.archived()) {
+            var icon = createIcon(VaadinIcon.ARCHIVE);
+            layout.add(icon);
+          }
+          if (repo.privateRepo()) {
+            var icon = createIcon(VaadinIcon.LOCK);
+            layout.add(icon);
+          }
+          return layout;
+        })
+        .setWidth("10%");
+
     grid.setHeightFull();
 
     var inputLayout = userInput(grid.getListDataView());
