@@ -51,15 +51,20 @@ public class BranchesView extends View {
                 .setHeader("Name")
                 .setWidth("40%");
 
-        var inputLayout = userInput(dataView);
-        var layout = new VerticalLayout();
-        layout.setHeightFull();
-        layout.add(inputLayout);
-        layout.add(grid);
-        setContent(layout);
+        WebStorage.getItem(LOCAL_STORAGE_KEY, excludedPrefixes -> {
+            if (excludedPrefixes == null) {
+                excludedPrefixes = "master,release/,stale/,dependabot/,gh-pages,dev10.0,dev11.1";
+            }
+            var inputLayout = userInput(excludedPrefixes, dataView);
+            var layout = new VerticalLayout();
+            layout.setHeightFull();
+            layout.add(inputLayout);
+            layout.add(grid);
+            setContent(layout);
+        });
     }
 
-    private Component userInput(GridListDataView<Branch> dataView) {
+    private Component userInput(String excludedPrefixes, GridListDataView<Branch> dataView) {
         var search = new TextField();
         search.setWidth("30%");
         search.setPlaceholder("Search");
@@ -69,19 +74,13 @@ public class BranchesView extends View {
 
         var excludedBranchPrefixes = new TextField();
         excludedBranchPrefixes.setWidth("60%");
-        excludedBranchPrefixes.setPlaceholder("master,release/,stale/");
         excludedBranchPrefixes.setHelperText("Branch prefixes to be excluded, e.g. master,release/,stale/");
         excludedBranchPrefixes.setValueChangeMode(ValueChangeMode.EAGER);
         excludedBranchPrefixes.addValueChangeListener(e -> {
             dataView.refreshAll();
             WebStorage.setItem(LOCAL_STORAGE_KEY, e.getValue());
         });
-        WebStorage.getItem(LOCAL_STORAGE_KEY, value -> {
-            if (value == null) {
-                excludedBranchPrefixes.setValue("master,release/,stale/,dependabot/,gh-pages,dev10.0,dev11.1");
-            }
-            excludedBranchPrefixes.setValue(value);
-        });
+        excludedBranchPrefixes.setValue(excludedPrefixes);
         dataView.addFilter(new SearchFilter(search));
         dataView.addFilter(new ExcludedBranchesFilter(excludedBranchPrefixes));
         var inputLayout = new HorizontalLayout();
