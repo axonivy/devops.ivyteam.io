@@ -37,6 +37,8 @@ public class BranchesGrid {
           return new Anchor(b.ghLink(), b.name());
         }))
         .setHeader("Name")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(Branch::name))
         .setWidth("40%");
     grid.setSizeFull();
     return grid;
