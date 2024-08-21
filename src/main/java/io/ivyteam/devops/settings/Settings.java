@@ -2,8 +2,8 @@ package io.ivyteam.devops.settings;
 
 public class Settings {
 
-  private String gitHubOrg;
-  private String gitHubToken;
+  private String gitHubOrg = "";
+  private String gitHubToken = "";
 
   public String gitHubOrg() {
     return gitHubOrg;
