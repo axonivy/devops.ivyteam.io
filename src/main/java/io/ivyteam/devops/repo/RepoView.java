@@ -83,7 +83,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
   private TextArea createTextArea(String value) {
     var txt = new TextArea();
-    txt.setValue(value);
+    txt.setValue(value == null ? "" : value);
     txt.setReadOnly(true);
     txt.getStyle().set("width", "100%");
     txt.setHeight("800px");
