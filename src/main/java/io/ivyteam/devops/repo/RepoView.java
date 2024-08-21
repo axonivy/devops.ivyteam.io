@@ -5,6 +5,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -38,11 +39,13 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var tabDetail = new Tab("Details");
     tabSheet.add(tabDetail, createDetail(repo));
 
-    var tabPrs = new Tab("Pull Requests");
+    var prCounter = new Span("Pull Requests (" + repo.openPullRequests() + ")");
+    var tabPrs = new Tab(prCounter);
     var gridPrs = createGridPullRequests(repo);
     tabSheet.add(tabPrs, gridPrs);
 
-    var tabBranches = new Tab("Branches");
+    var branchCounter = new Span("Branches (" + repo.branches().size() + ")");
+    var tabBranches = new Tab(branchCounter);
     var gridBranches = BranchesGrid.create(repo.branches());
     tabSheet.add(tabBranches, gridBranches);
 
