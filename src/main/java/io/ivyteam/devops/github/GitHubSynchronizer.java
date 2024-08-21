@@ -136,9 +136,8 @@ public class GitHubSynchronizer {
   private static List<GHRepository> reposFor(String orgName) {
     try {
       var org = GitHubProvider.get().getOrganization(orgName);
-      return List.copyOf(org.getRepositories().values())
-          .stream()
-          .limit(10)
+      return List.copyOf(org.getRepositories().values()).stream()
+          // .limit(10)
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
