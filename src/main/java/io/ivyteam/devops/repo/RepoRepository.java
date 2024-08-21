@@ -35,7 +35,19 @@ public class RepoRepository {
               }
             }
 
-            var repo = new Repo(name, archived, openPullRequests, license, settingsLog, prs);
+            var branches = new ArrayList<Branch>();
+            try (var stmtB = connection.prepareStatement("SELECT * FROM branch WHERE repository = ?")) {
+              stmtB.setString(1, name);
+              try (var resultB = stmtB.executeQuery()) {
+                while (resultB.next()) {
+                  var bName = resultB.getString("name");
+                  var lastCommitAuthor = resultB.getString("lastCommitAuthor");
+                  branches.add(new Branch(name, bName, lastCommitAuthor));
+                }
+              }
+            }
+
+            var repo = new Repo(name, archived, openPullRequests, license, settingsLog, prs, branches);
             repos.add(repo);
           }
           return repos;
@@ -64,6 +76,16 @@ public class RepoRepository {
             s.setLong(2, pr.id());
             s.setString(3, pr.title());
             s.setString(4, pr.user());
+            s.execute();
+          }
+        }
+
+        for (var branch : repo.branches()) {
+          try (var s = connection
+              .prepareStatement("INSERT INTO branch (repository, name, lastCommitAuthor) VALUES (?, ?, ?)")) {
+            s.setString(1, repo.name());
+            s.setString(2, branch.name());
+            s.setString(3, branch.lastCommitAuthor());
             s.execute();
           }
         }

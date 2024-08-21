@@ -10,7 +10,7 @@ import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 public abstract class View extends AppLayout {
-  
+
   public View() {
     var toggle = new DrawerToggle();
     var title = new H1(title());
@@ -30,6 +30,7 @@ public abstract class View extends AppLayout {
     var sideNav = new SideNav();
     sideNav.addItem(new SideNavItem("Dashboard", "/", VaadinIcon.DASHBOARD.create()));
     sideNav.addItem(new SideNavItem("Settings", "/settings", VaadinIcon.LIST.create()));
+    sideNav.addItem(new SideNavItem("Branches", "/branches", VaadinIcon.CODE.create()));
     return sideNav;
   }
 
