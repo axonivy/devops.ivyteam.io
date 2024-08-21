@@ -1,6 +1,7 @@
 package io.ivyteam.devops.github;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -97,7 +98,10 @@ public class GitHubSynchronizer {
 
     var name = repo.getFullName();
     var archived = repo.isArchived();
-    boolean licence = hasLicence(repo);
+    var privateRepo = repo.isPrivate();
+    var licence = license(repo, "LICENSE");
+    var securityMd = license(repo, "SECURITY.md");
+    var codeOfConduct = license(repo, "CODE_OF_CONDUCT.md");
     var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
     var openPullRequests = gitHubPrs.size();
 
@@ -109,18 +113,19 @@ public class GitHubSynchronizer {
     var branches = repo.getBranches().values().stream()
         .map(b -> toBranch(b, ghRepo)).toList();
 
-    var rr = new Repo(name, archived, openPullRequests, licence, settingsLog, prs, branches);
+    var rr = new Repo(name, archived, privateRepo, openPullRequests, licence, securityMd, codeOfConduct, settingsLog,
+        prs, branches);
     repository.create(rr);
   }
 
-  private boolean hasLicence(GHRepository repo) throws IOException {
-    boolean licence;
+  private String license(GHRepository repo, String file) throws IOException {
     try {
-      licence = repo.getFileContent("LICENSE") != null;
+      try (var in = repo.getFileContent(file).read()) {
+        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+      }
     } catch (GHFileNotFoundException e) {
-      licence = false;
+      return null;
     }
-    return licence;
   }
 
   private PullRequest toPullRequest(GHPullRequest pr) {

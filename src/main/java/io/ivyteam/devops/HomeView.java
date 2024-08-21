@@ -3,8 +3,6 @@ package io.ivyteam.devops;
 import java.io.IOException;
 import java.util.Comparator;
 
-import org.apache.commons.lang3.function.BooleanConsumer;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
@@ -12,7 +10,12 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.LitRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.github.GitHubProvider;
@@ -66,7 +69,7 @@ public class HomeView extends View {
           if (repo.archived()) {
             return null;
           }
-          if (repo.license()) {
+          if (repo.license() != null) {
             var icon = createIcon(VaadinIcon.CHECK);
             icon.getElement().getThemeList().add("badge success");
             return icon;
@@ -109,23 +112,37 @@ public class HomeView extends View {
     })
         .setHeader("Synch")
         .setWidth("20%");
-
-    var repoFilter = new RepoFilter(dataView);
-    grid.getHeaderRows().clear();
-    var headerRow = grid.appendHeaderRow();
-    headerRow.getCell(archivedColumn).setComponent(createFilterHeader(repoFilter::archived));
-
     grid.setHeightFull();
-    setContent(grid);
+
+    var inputLayout = userInput(grid.getListDataView());
+    var layout = new VerticalLayout();
+    layout.setHeightFull();
+    layout.add(inputLayout);
+    layout.add(grid);
+    setContent(layout);
   }
 
-  private static Component createFilterHeader(BooleanConsumer filterChangeConsumer) {
-    var textField = new Checkbox();
-    textField.setWidthFull();
-    textField.getStyle().set("max-width", "100%");
-    textField.addValueChangeListener(
-        e -> filterChangeConsumer.accept(e.getValue()));
-    return textField;
+  private Component userInput(GridListDataView<Repo> dataView) {
+    var search = new TextField();
+    search.setWidth("80%");
+    search.setPlaceholder("Search");
+    search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+    search.setValueChangeMode(ValueChangeMode.EAGER);
+    search.addValueChangeListener(e -> dataView.refreshAll());
+    dataView.addFilter(new SearchFilter(search));
+
+    var checkboxArchived = new Checkbox();
+    checkboxArchived.setWidthFull();
+    checkboxArchived.getStyle().set("max-width", "20%");
+    checkboxArchived.setLabel("Include archived");
+    checkboxArchived.addValueChangeListener(e -> dataView.refreshAll());
+    dataView.addFilter(new RepoFilter(checkboxArchived));
+
+    var inputLayout = new HorizontalLayout();
+    inputLayout.setWidthFull();
+    inputLayout.add(search);
+    inputLayout.add(checkboxArchived);
+    return inputLayout;
   }
 
   @Override
@@ -159,23 +176,39 @@ public class HomeView extends View {
     }
   }
 
-  private static class RepoFilter {
+  private static class RepoFilter implements SerializablePredicate<Repo> {
 
-    private final GridListDataView<Repo> dataView;
-    private boolean archived = false;
+    private final Checkbox archived;
 
-    public RepoFilter(GridListDataView<Repo> dataView) {
-      this.dataView = dataView;
-      this.dataView.addFilter(this::test);
-    }
-
-    public void archived(boolean archived) {
+    public RepoFilter(Checkbox archived) {
       this.archived = archived;
-      this.dataView.refreshAll();
     }
 
+    @Override
     public boolean test(Repo repo) {
-      return repo.archived() == archived;
+      if (archived.getValue()) {
+        return true;
+      }
+      return !repo.archived();
+    }
+  }
+
+  public class SearchFilter implements SerializablePredicate<Repo> {
+
+    private final TextField search;
+
+    public SearchFilter(TextField search) {
+      this.search = search;
+    }
+
+    @Override
+    public boolean test(Repo repo) {
+      var searchValue = search.getValue().trim().toLowerCase();
+      if (searchValue.isEmpty()) {
+        return true;
+      }
+      var matchesName = repo.name().toLowerCase().contains(searchValue);
+      return matchesName;
     }
   }
 }

@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class Database {
 
-  private static final String VERSION = "1";
+  private static final String VERSION = "3";
   private static final Path PATH = Path.of("data", "githubV" + VERSION + ".db");
 
   private static boolean exists() {

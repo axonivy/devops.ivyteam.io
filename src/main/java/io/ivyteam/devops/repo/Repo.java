@@ -5,8 +5,11 @@ import java.util.List;
 public record Repo(
     String name,
     boolean archived,
+    boolean privateRepo,
     int openPullRequests,
-    boolean license,
+    String license,
+    String securityMd,
+    String codeOfConduct,
     String settingsLog,
     List<PullRequest> prs,
     List<Branch> branches) {
