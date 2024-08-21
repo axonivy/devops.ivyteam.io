@@ -18,8 +18,11 @@ public class RepoRepository {
           while (result.next()) {
             var name = result.getString("name");
             var archived = result.getInt("archived") == 1;
+            var privateRepo = result.getInt("private") == 1;
             var openPullRequests = result.getInt("openPullRequests");
-            var license = result.getInt("license") == 1;
+            var license = result.getString("license");
+            var securityMd = result.getString("securityMd");
+            var codeOfConduct = result.getString("codeOfConduct");
             var settingsLog = result.getString("settingsLog");
 
             var prs = new ArrayList<PullRequest>();
@@ -47,7 +50,8 @@ public class RepoRepository {
               }
             }
 
-            var repo = new Repo(name, archived, openPullRequests, license, settingsLog, prs, branches);
+            var repo = new Repo(name, archived, privateRepo, openPullRequests, license, securityMd, codeOfConduct,
+                settingsLog, prs, branches);
             repos.add(repo);
           }
           return repos;
@@ -66,12 +70,15 @@ public class RepoRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO repository (name, archived, openPullRequests, license, settingsLog) VALUES (?, ?, ?, ?, ?)")) {
+          "INSERT INTO repository (name, archived, private, openPullRequests, license, securityMd, codeOfConduct, settingsLog) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
         stmt.setInt(2, repo.archived() ? 1 : 0);
-        stmt.setInt(3, repo.openPullRequests());
-        stmt.setInt(4, repo.license() ? 1 : 0);
-        stmt.setString(5, repo.settingsLog());
+        stmt.setInt(3, repo.privateRepo() ? 1 : 0);
+        stmt.setInt(4, repo.openPullRequests());
+        stmt.setString(5, repo.license());
+        stmt.setString(6, repo.securityMd());
+        stmt.setString(7, repo.codeOfConduct());
+        stmt.setString(8, repo.settingsLog());
         stmt.execute();
 
         for (var pr : repo.prs()) {
