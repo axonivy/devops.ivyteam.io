@@ -40,7 +40,16 @@ public class GitHubSynchronizer {
 
   private void notify(String msg, double work) {
     this.progress = new Progress(msg, work);
-    progressListener.forEach(listener -> listener.accept(progress));
+    var iterator = progressListener.iterator();
+    while (iterator.hasNext()) {
+      var listener = iterator.next();
+      try {
+        listener.accept(progress);
+      } catch (Exception ex) {
+        // ignore, maybe a UIDetachedException
+        iterator.remove();
+      }
+    }
   }
 
   public Progress getProgress() {
