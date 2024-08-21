@@ -69,7 +69,8 @@ public class BranchesView extends View {
 
         var excludedBranchPrefixes = new TextField();
         excludedBranchPrefixes.setWidth("60%");
-        excludedBranchPrefixes.setHelperText("Branch prefixes to be excluded, e.g. maste,release");
+        excludedBranchPrefixes.setPlaceholder("master,release/,stale/");
+        excludedBranchPrefixes.setHelperText("Branch prefixes to be excluded, e.g. master,release/,stale/");
         excludedBranchPrefixes.setValueChangeMode(ValueChangeMode.EAGER);
         excludedBranchPrefixes.addValueChangeListener(e -> {
             dataView.refreshAll();
