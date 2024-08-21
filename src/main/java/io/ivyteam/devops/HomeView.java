@@ -40,7 +40,8 @@ public class HomeView extends View {
         .withProperty("name", p -> p.name()))
         .setHeader("Name")
         .setWidth("40%")
-        .setSortable(true);
+        .setSortable(true)
+        .setComparator(Comparator.comparing(Repo::name));
 
     var archivedColumn = grid
         .addColumn(Repo::archived)
