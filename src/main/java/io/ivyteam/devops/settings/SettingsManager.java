@@ -33,6 +33,8 @@ public class SettingsManager {
 
     settings.gitHubOrg(properties.getProperty(Settings.GITHUB_ORG, ""));
     settings.gitHubToken(properties.getProperty(Settings.GITHUB_TOKEN, ""));
+    settings.excludedBranchPrefixes(properties.getProperty(Settings.EXCLUDED_BRANCH_PREFIXES,
+        "master,release/,stale/,dependabot/,gh-pages,dev10.0,dev11.1"));
     return settings;
   }
 
@@ -40,6 +42,7 @@ public class SettingsManager {
     var properties = new java.util.Properties();
     properties.setProperty(Settings.GITHUB_ORG, settings.gitHubOrg());
     properties.setProperty(Settings.GITHUB_TOKEN, settings.gitHubToken());
+    properties.setProperty(Settings.EXCLUDED_BRANCH_PREFIXES, settings.excludedBranchPrefixes());
     try (var out = Files.newOutputStream(path, java.nio.file.StandardOpenOption.CREATE)) {
       properties.store(out, null);
     } catch (IOException ex) {
