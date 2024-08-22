@@ -1,5 +1,6 @@
 package io.ivyteam.devops.pullrequest;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,14 +18,7 @@ public class PullRequestRepository {
     try (var connection = Database.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM pull_request WHERE user = ? ORDER BY title")) {
         stmt.setString(1, userName);
-        try (var result = stmt.executeQuery()) {
-          var prs = new ArrayList<PullRequest>();
-          while (result.next()) {
-            var pr = toPr(result);
-            prs.add(pr);
-          }
-          return prs;
-        }
+        return query(stmt);
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
@@ -35,17 +29,48 @@ public class PullRequestRepository {
     try (var connection = Database.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM pull_request WHERE repository = ? ORDER BY title")) {
         stmt.setString(1, repo);
-        try (var result = stmt.executeQuery()) {
-          var prs = new ArrayList<PullRequest>();
-          while (result.next()) {
-            var pr = toPr(result);
-            prs.add(pr);
-          }
-          return prs;
-        }
+        return query(stmt);
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
+    }
+  }
+
+  public void create(PullRequest pr) {
+    try (var connection = Database.connection()) {
+      try (var s = connection
+          .prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {
+        s.setString(1, pr.repository());
+        s.setLong(2, pr.id());
+        s.setString(3, pr.title());
+        s.setString(4, pr.user());
+        s.execute();
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public void delete(PullRequest pr) {
+    try (var connection = Database.connection()) {
+      try (var s = connection.prepareStatement("DELETE FROM pull_request WHERE repository = ? AND id = ?")) {
+        s.setString(1, pr.repository());
+        s.setLong(2, pr.id());
+        s.execute();
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private List<PullRequest> query(PreparedStatement stmt) throws SQLException {
+    try (var result = stmt.executeQuery()) {
+      var prs = new ArrayList<PullRequest>();
+      while (result.next()) {
+        var pr = toPr(result);
+        prs.add(pr);
+      }
+      return prs;
     }
   }
 
@@ -54,7 +79,6 @@ public class PullRequestRepository {
     var id = result.getLong("id");
     var title = result.getString("title");
     var user = result.getString("user");
-    var pr = new PullRequest(repository, id, title, user);
-    return pr;
+    return new PullRequest(repository, id, title, user);
   }
 }

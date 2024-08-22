@@ -66,6 +66,11 @@ public class RepoView extends View implements HasUrlParameter<String> {
     chkArchived.setReadOnly(true);
     formLayout.add(chkArchived);
 
+    var chkPrivate = new Checkbox("Private");
+    chkPrivate.setValue(repo.privateRepo());
+    chkPrivate.setReadOnly(true);
+    formLayout.add(chkPrivate);
+
     var tabSheet = new TabSheet();
 
     var tabLicense = new Tab("LICENSE");

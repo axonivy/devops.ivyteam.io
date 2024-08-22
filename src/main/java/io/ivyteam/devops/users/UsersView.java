@@ -19,8 +19,8 @@ public class UsersView extends View {
     var grid = new Grid<>(users.all());
     grid.setSizeFull();
 
-    grid.addColumn(new ComponentRenderer<>(user -> new Anchor(user.link(), user.name())))
-
+    grid
+        .addColumn(new ComponentRenderer<>(user -> new Anchor(user.link(), user.name())))
         .setHeader("Name")
         .setWidth("100%")
         .setSortable(true)
