@@ -1,32 +1,41 @@
 package io.ivyteam.devops.pullrequest;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.data.renderer.LitRenderer;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 
 import io.ivyteam.devops.repo.PullRequest;
+import io.ivyteam.devops.users.User;
 
 public class PullRequestGrid {
 
   public static Grid<PullRequest> create(List<PullRequest> prs) {
-    var grid = new Grid<PullRequest>();
-    grid.setItems(prs);
-    grid.addColumn(LitRenderer.<PullRequest>of("""
-           <a href="${item.link}">${item.title}</a>
-        """)
-        .withProperty("link", pr -> pr.ghLink())
-        .withProperty("title", pr -> pr.title()))
-        .setHeader("Title")
-        .setWidth("70%")
+    var grid = new Grid<PullRequest>(prs);
+    grid.setSizeFull();
+
+    grid
+        .addColumn(pr -> pr.id())
+        .setHeader("ID")
+        .setWidth("10%")
         .setSortable(true);
 
     grid
-        .addColumn(PullRequest::user)
-        .setHeader("User")
+        .addColumn(new ComponentRenderer<>(pr -> new Anchor(pr.ghLink(), pr.title())))
+        .setHeader("Title")
+        .setWidth("60%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(PullRequest::title));
+
+    grid
+        .addColumn(new ComponentRenderer<>(pr -> new Anchor(new User(pr.user()).link(), pr.user())))
+        .setHeader("Name")
         .setWidth("30%")
-        .setSortable(true);
-    grid.setSizeFull();
+        .setSortable(true)
+        .setComparator(Comparator.comparing(PullRequest::user));
+
     return grid;
   }
 }

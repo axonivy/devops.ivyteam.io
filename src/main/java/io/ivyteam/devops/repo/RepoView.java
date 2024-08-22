@@ -38,7 +38,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var tabDetail = new Tab("Details");
     tabSheet.add(tabDetail, createDetail(repo));
 
-    var prCounter = new Span("Pull Requests (" + repo.openPullRequests() + ")");
+    var prCounter = new Span("Pull Requests (" + repo.prs().size() + ")");
     var tabPrs = new Tab(prCounter);
     var gridPrs = PullRequestGrid.create(repo.prs());
     tabSheet.add(tabPrs, gridPrs);

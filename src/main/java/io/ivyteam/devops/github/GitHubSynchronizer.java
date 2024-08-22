@@ -103,7 +103,6 @@ public class GitHubSynchronizer {
     var securityMd = license(repo, "SECURITY.md");
     var codeOfConduct = license(repo, "CODE_OF_CONDUCT.md");
     var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
-    var openPullRequests = gitHubPrs.size();
 
     var prs = gitHubPrs.stream()
         .map(this::toPullRequest)
@@ -113,7 +112,7 @@ public class GitHubSynchronizer {
     var branches = repo.getBranches().values().stream()
         .map(b -> toBranch(b, ghRepo)).toList();
 
-    var rr = new Repo(name, archived, privateRepo, openPullRequests, licence, securityMd, codeOfConduct, settingsLog,
+    var rr = new Repo(name, archived, privateRepo, licence, securityMd, codeOfConduct, settingsLog,
         prs, branches);
     repository.create(rr);
   }

@@ -2,7 +2,6 @@ CREATE TABLE repository (
     name VARCHAR(200) PRIMARY KEY NOT NULL,
     archived INTEGER NOT NULL,
     private INTEGER NOT NULL,
-    openPullRequests INTEGER NOT NULL,
     license TEXT NULL,
     securityMd TEXT NULL,
     codeOfConduct TEXT NULL,
