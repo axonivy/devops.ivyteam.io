@@ -1,4 +1,4 @@
-package io.ivyteam.devops.repo;
+package io.ivyteam.devops.pullrequest;
 
 public record PullRequest(
     String repository,

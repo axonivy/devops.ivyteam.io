@@ -1,15 +1,13 @@
-package io.ivyteam.devops.branches;
+package io.ivyteam.devops.branch;
 
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializablePredicate;
 
-import io.ivyteam.devops.repo.Branch;
-
-public class SearchFilter implements SerializablePredicate<Branch> {
+class SearchFilter implements SerializablePredicate<Branch> {
 
   private final TextField search;
 
-  public SearchFilter(TextField search) {
+  SearchFilter(TextField search) {
     this.search = search;
   }
 

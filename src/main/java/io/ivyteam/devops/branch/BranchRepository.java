@@ -1,4 +1,4 @@
-package io.ivyteam.devops.branches;
+package io.ivyteam.devops.branch;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import io.ivyteam.devops.db.Database;
-import io.ivyteam.devops.repo.Branch;
 
 @Repository
 public class BranchRepository {

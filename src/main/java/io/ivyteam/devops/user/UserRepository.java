@@ -1,4 +1,4 @@
-package io.ivyteam.devops.users;
+package io.ivyteam.devops.user;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.Streams;
 
-import io.ivyteam.devops.branches.BranchRepository;
+import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 
 @Repository

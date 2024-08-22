@@ -1,4 +1,4 @@
-package io.ivyteam.devops.branches;
+package io.ivyteam.devops.branch;
 
 import java.util.HashMap;
 
@@ -16,7 +16,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 
-import io.ivyteam.devops.repo.Branch;
 import io.ivyteam.devops.settings.SettingsManager;
 import io.ivyteam.devops.view.View;
 
@@ -29,7 +28,7 @@ public class BranchesView extends View {
   private String excludedPrefixes = "";
 
   public BranchesView(BranchRepository branches) {
-    var grid = BranchesGrid.create(branches.all());
+    var grid = BranchGrid.create(branches.all());
     var layout = new VerticalLayout();
     layout.setHeightFull();
 

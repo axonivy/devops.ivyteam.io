@@ -15,11 +15,11 @@ import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHRepository;
 
-import io.ivyteam.devops.branches.BranchRepository;
+import io.ivyteam.devops.branch.Branch;
+import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
-import io.ivyteam.devops.repo.Branch;
-import io.ivyteam.devops.repo.PullRequest;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
 import io.ivyteam.devops.settings.SettingsManager;

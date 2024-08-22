@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import io.ivyteam.devops.db.Database;
-import io.ivyteam.devops.repo.PullRequest;
 
 @Repository
 public class PullRequestRepository {
