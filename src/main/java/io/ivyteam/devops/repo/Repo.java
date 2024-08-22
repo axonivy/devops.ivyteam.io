@@ -6,7 +6,6 @@ public record Repo(
     String name,
     boolean archived,
     boolean privateRepo,
-    int openPullRequests,
     String license,
     String securityMd,
     String codeOfConduct,

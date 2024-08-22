@@ -10,8 +10,10 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 public abstract class View extends AppLayout {
 
+  protected H1 title;
+
   public View() {
-    var title = new H1(title());
+    title = new H1(title());
     title.getStyle()
         .set("font-size", "var(--lumo-font-size-l)")
         .set("margin-left", "18px");
@@ -34,5 +36,7 @@ public abstract class View extends AppLayout {
     return sideNav;
   }
 
-  public abstract String title();
+  public String title() {
+    return "";
+  }
 }

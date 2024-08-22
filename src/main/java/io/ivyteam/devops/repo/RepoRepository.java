@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.pullrequest.PullRequestRepository;
 
 public class RepoRepository {
 
@@ -20,24 +21,13 @@ public class RepoRepository {
             var name = result.getString("name");
             var archived = result.getInt("archived") == 1;
             var privateRepo = result.getInt("private") == 1;
-            var openPullRequests = result.getInt("openPullRequests");
             var license = result.getString("license");
             var securityMd = result.getString("securityMd");
             var codeOfConduct = result.getString("codeOfConduct");
             var settingsLog = result.getString("settingsLog");
 
-            var prs = new ArrayList<PullRequest>();
-            try (var stmtPr = connection.prepareStatement("SELECT * FROM pull_request WHERE repository = ?")) {
-              stmtPr.setString(1, name);
-              try (var resultPr = stmtPr.executeQuery()) {
-                while (resultPr.next()) {
-                  var prName = resultPr.getString("title");
-                  var prUser = resultPr.getString("user");
-                  var prId = resultPr.getLong("id");
-                  prs.add(new PullRequest(name, prId, prName, prUser));
-                }
-              }
-            }
+            var prRepo = new PullRequestRepository();
+            var prs = prRepo.findByRepository(name);
 
             var branches = new ArrayList<Branch>();
             try (var stmtB = connection.prepareStatement("SELECT * FROM branch WHERE repository = ?")) {
@@ -51,7 +41,7 @@ public class RepoRepository {
               }
             }
 
-            var repo = new Repo(name, archived, privateRepo, openPullRequests, license, securityMd, codeOfConduct,
+            var repo = new Repo(name, archived, privateRepo, license, securityMd, codeOfConduct,
                 settingsLog, prs, branches);
             repos.add(repo);
           }
@@ -71,15 +61,14 @@ public class RepoRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO repository (name, archived, private, openPullRequests, license, securityMd, codeOfConduct, settingsLog) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+          "INSERT INTO repository (name, archived, private, license, securityMd, codeOfConduct, settingsLog) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
         stmt.setInt(2, repo.archived() ? 1 : 0);
         stmt.setInt(3, repo.privateRepo() ? 1 : 0);
-        stmt.setInt(4, repo.openPullRequests());
-        stmt.setString(5, repo.license());
-        stmt.setString(6, repo.securityMd());
-        stmt.setString(7, repo.codeOfConduct());
-        stmt.setString(8, repo.settingsLog());
+        stmt.setString(4, repo.license());
+        stmt.setString(5, repo.securityMd());
+        stmt.setString(6, repo.codeOfConduct());
+        stmt.setString(7, repo.settingsLog());
         stmt.execute();
 
         for (var pr : repo.prs()) {

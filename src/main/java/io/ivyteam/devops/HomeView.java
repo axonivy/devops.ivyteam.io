@@ -48,7 +48,7 @@ public class HomeView extends View {
 
     grid
         .addComponentColumn(repo -> {
-          var counter = new Span(String.valueOf(repo.openPullRequests()));
+          var counter = new Span(String.valueOf(repo.prs().size()));
           counter.getElement().getThemeList().add("badge pill small contrast");
           counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
           return counter;
@@ -56,7 +56,7 @@ public class HomeView extends View {
         .setHeader("PRs")
         .setWidth("10%")
         .setSortable(true)
-        .setComparator(Comparator.comparing(Repo::openPullRequests));
+        .setComparator(Comparator.comparing(repo -> repo.prs().size()));
 
     grid
         .addComponentColumn(repo -> {
