@@ -21,6 +21,7 @@ import com.vaadin.flow.router.Route;
 import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.github.GitHubRepoConfigurator;
 import io.ivyteam.devops.github.GitHubSynchronizer;
+import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
 import io.ivyteam.devops.view.View;
@@ -30,11 +31,8 @@ public class HomeView extends View {
 
   private final Grid<Repo> grid;
 
-  public HomeView() {
-    var repos = RepoRepository.INSTANCE.all();
-
-    grid = new Grid<>();
-    grid.setItems(repos);
+  public HomeView(RepoRepository repos, PullRequestRepository prs) {
+    grid = new Grid<>(repos.all());
 
     grid.addColumn(LitRenderer.<Repo>of("""
            <a href="${item.link}">${item.name}</a>
@@ -48,7 +46,7 @@ public class HomeView extends View {
 
     grid
         .addComponentColumn(repo -> {
-          var counter = new Span(String.valueOf(repo.prs().size()));
+          var counter = new Span(String.valueOf("n.a."));
           counter.getElement().getThemeList().add("badge pill small contrast");
           counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
           return counter;
@@ -56,11 +54,11 @@ public class HomeView extends View {
         .setHeader("PRs")
         .setWidth("10%")
         .setSortable(true)
-        .setComparator(Comparator.comparing(repo -> repo.prs().size()));
+        .setComparator(Comparator.comparing(repo -> 0));
 
     grid
         .addComponentColumn(repo -> {
-          var counter = new Span(String.valueOf(repo.branches().size()));
+          var counter = new Span(String.valueOf("n.a."));
           counter.getElement().getThemeList().add("badge pill small contrast");
           counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
           return counter;
@@ -68,7 +66,7 @@ public class HomeView extends View {
         .setHeader("Branches")
         .setWidth("10%")
         .setSortable(true)
-        .setComparator(Comparator.comparing(r -> r.branches().size()));
+        .setComparator(Comparator.comparing(r -> 0));
 
     grid
         .addComponentColumn(repo -> {

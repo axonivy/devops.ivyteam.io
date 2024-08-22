@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import io.ivyteam.devops.db.Database;
@@ -14,8 +15,21 @@ import io.ivyteam.devops.repo.PullRequest;
 @Repository
 public class PullRequestRepository {
 
+  @Autowired
+  private Database db;
+
+  public List<PullRequest> all() {
+    try (var connection = db.connection()) {
+      try (var stmt = connection.prepareStatement("SELECT * FROM pull_request ORDER BY title")) {
+        return query(stmt);
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
   public List<PullRequest> findByUser(String userName) {
-    try (var connection = Database.connection()) {
+    try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM pull_request WHERE user = ? ORDER BY title")) {
         stmt.setString(1, userName);
         return query(stmt);
@@ -26,7 +40,7 @@ public class PullRequestRepository {
   }
 
   public List<PullRequest> findByRepository(String repo) {
-    try (var connection = Database.connection()) {
+    try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM pull_request WHERE repository = ? ORDER BY title")) {
         stmt.setString(1, repo);
         return query(stmt);
@@ -37,7 +51,7 @@ public class PullRequestRepository {
   }
 
   public void create(PullRequest pr) {
-    try (var connection = Database.connection()) {
+    try (var connection = db.connection()) {
       try (var s = connection
           .prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {
         s.setString(1, pr.repository());
@@ -52,7 +66,7 @@ public class PullRequestRepository {
   }
 
   public void delete(PullRequest pr) {
-    try (var connection = Database.connection()) {
+    try (var connection = db.connection()) {
       try (var s = connection.prepareStatement("DELETE FROM pull_request WHERE repository = ? AND id = ?")) {
         s.setString(1, pr.repository());
         s.setLong(2, pr.id());

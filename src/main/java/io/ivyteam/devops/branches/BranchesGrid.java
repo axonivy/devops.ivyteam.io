@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
 import io.ivyteam.devops.repo.Branch;
+import io.ivyteam.devops.users.User;
 
 public class BranchesGrid {
 
@@ -15,13 +16,15 @@ public class BranchesGrid {
     var grid = new Grid<>(branches);
     grid.setSizeFull();
 
-    grid
-        .addColumn(Branch::lastCommitAuthor)
+    grid.addColumn(
+        new ComponentRenderer<>(
+            branch -> new Anchor(new User(branch.lastCommitAuthor()).link(), branch.lastCommitAuthor())))
         .setHeader("Author")
         .setWidth("10%")
-        .setSortable(true);
+        .setSortable(true)
+        .setComparator(Comparator.comparing(Branch::lastCommitAuthor));
 
-    grid.addColumn(new ComponentRenderer<>(branch -> new Anchor(branch.repoLink(), branch.name())))
+    grid.addColumn(new ComponentRenderer<>(branch -> new Anchor(branch.repoLink(), branch.repository())))
         .setHeader("Repository")
         .setWidth("20%")
         .setSortable(true)

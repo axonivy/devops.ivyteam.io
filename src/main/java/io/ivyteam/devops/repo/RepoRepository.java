@@ -4,16 +4,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ivyteam.devops.branches.BranchesRepository;
-import io.ivyteam.devops.db.Database;
-import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
+import io.ivyteam.devops.db.Database;
+
+@Repository
 public class RepoRepository {
 
-  public static final RepoRepository INSTANCE = new RepoRepository();
+  @Autowired
+  private Database db;
 
   public List<Repo> all() {
-    try (var connection = Database.connection()) {
+    try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM repository ORDER BY name")) {
         try (var result = stmt.executeQuery()) {
           var repos = new ArrayList<Repo>();
@@ -26,11 +29,7 @@ public class RepoRepository {
             var codeOfConduct = result.getString("codeOfConduct");
             var settingsLog = result.getString("settingsLog");
 
-            var prs = new PullRequestRepository().findByRepository(name);
-            var branches = new BranchesRepository().findByRepo(name);
-
-            var repo = new Repo(name, archived, privateRepo, license, securityMd, codeOfConduct,
-                settingsLog, prs, branches);
+            var repo = new Repo(name, archived, privateRepo, license, securityMd, codeOfConduct, settingsLog);
             repos.add(repo);
           }
           return repos;
@@ -42,7 +41,7 @@ public class RepoRepository {
   }
 
   public void create(Repo repo) {
-    try (var connection = Database.connection()) {
+    try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("DELETE FROM repository WHERE name = ?")) {
         stmt.setString(1, repo.name());
         stmt.execute();
@@ -58,14 +57,6 @@ public class RepoRepository {
         stmt.setString(6, repo.codeOfConduct());
         stmt.setString(7, repo.settingsLog());
         stmt.execute();
-
-        for (var pr : repo.prs()) {
-          new PullRequestRepository().create(pr);
-        }
-
-        for (var branch : repo.branches()) {
-          new BranchesRepository().create(branch);
-        }
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
