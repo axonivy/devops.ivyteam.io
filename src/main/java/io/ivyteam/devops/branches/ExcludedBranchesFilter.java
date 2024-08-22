@@ -9,19 +9,19 @@ import io.ivyteam.devops.repo.Branch;
 
 public class ExcludedBranchesFilter implements SerializablePredicate<Branch> {
 
-    private final TextField excludedBranchPrefixes;
+  private final TextField excludedBranchPrefixes;
 
-    public ExcludedBranchesFilter(TextField excludedBranchPrefixes) {
-        this.excludedBranchPrefixes = excludedBranchPrefixes;
-    }
+  public ExcludedBranchesFilter(TextField excludedBranchPrefixes) {
+    this.excludedBranchPrefixes = excludedBranchPrefixes;
+  }
 
-    @Override
-    public boolean test(Branch branch) {
-        var excludedBranches = excludedBranchPrefixes.getValue().trim().toLowerCase();
-        if (excludedBranches.isEmpty()) {
-            return true;
-        }
-        return !Arrays.stream(excludedBranches.split(","))
-                .anyMatch(excludedBranche -> branch.name().startsWith(excludedBranche));
+  @Override
+  public boolean test(Branch branch) {
+    var excludedBranches = excludedBranchPrefixes.getValue().trim().toLowerCase();
+    if (excludedBranches.isEmpty()) {
+      return true;
     }
+    return !Arrays.stream(excludedBranches.split(","))
+        .anyMatch(excludedBranche -> branch.name().startsWith(excludedBranche));
+  }
 }

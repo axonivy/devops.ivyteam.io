@@ -1,5 +1,6 @@
 package io.ivyteam.devops.github;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.ivyteam.devops.branches.BranchesRepository;
+import io.ivyteam.devops.branches.BranchRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Branch;
 import io.ivyteam.devops.repo.PullRequest;
@@ -18,6 +19,12 @@ import io.ivyteam.devops.repo.PullRequest;
 @RequestMapping("/github-webhook/")
 @Conditional(WebhookCondition.class)
 public class GitHubWebhookController {
+
+  @Autowired
+  BranchRepository branches;
+
+  @Autowired
+  PullRequestRepository prs;
 
   @GetMapping(produces = "text/plain")
   String get() {
@@ -28,7 +35,7 @@ public class GitHubWebhookController {
   public ResponseEntity<Branch> createBranch(@RequestBody BranchBean bean) {
     if ("branch".equals(bean.ref_type)) {
       var branch = bean.toBranch();
-      new BranchesRepository().create(branch);
+      branches.create(branch);
       return ResponseEntity.ok().body(branch);
     }
     return ResponseEntity.notFound().build();
@@ -38,7 +45,7 @@ public class GitHubWebhookController {
   public ResponseEntity<Branch> deleteBranch(@RequestBody BranchBean bean) {
     if ("branch".equals(bean.ref_type)) {
       var branch = bean.toBranch();
-      new BranchesRepository().delete(branch);
+      branches.delete(branch);
       return ResponseEntity.ok().body(branch);
     }
     return ResponseEntity.notFound().build();
@@ -48,11 +55,11 @@ public class GitHubWebhookController {
   public ResponseEntity<PullRequest> createPR(@RequestBody PullRequestBean bean) {
     var pr = bean.toPullRequest();
     if ("opened".equals(bean.action)) {
-      new PullRequestRepository().create(pr);
+      prs.create(pr);
       return ResponseEntity.ok().body(pr);
     }
     if ("closed".equals(bean.action)) {
-      new PullRequestRepository().delete(pr);
+      prs.delete(pr);
       return ResponseEntity.ok().body(pr);
     }
     return ResponseEntity.notFound().build();

@@ -1,6 +1,5 @@
 package io.ivyteam.devops.branches;
 
-import java.util.Comparator;
 import java.util.HashMap;
 
 import com.vaadin.flow.component.Component;
@@ -18,7 +17,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 
 import io.ivyteam.devops.repo.Branch;
-import io.ivyteam.devops.repo.RepoRepository;
 import io.ivyteam.devops.settings.SettingsManager;
 import io.ivyteam.devops.view.View;
 
@@ -30,13 +28,8 @@ public class BranchesView extends View {
   private String searchValue = "";
   private String excludedPrefixes = "";
 
-  public BranchesView() {
-    var repos = RepoRepository.INSTANCE.all();
-    var branches = repos.stream().flatMap(r -> r.branches().stream())
-        .sorted(Comparator.comparing(Branch::lastCommitAuthor).thenComparing(Branch::repository))
-        .toList();
-
-    var grid = BranchesGrid.create(branches);
+  public BranchesView(BranchRepository branches) {
+    var grid = BranchesGrid.create(branches.all());
     var layout = new VerticalLayout();
     layout.setHeightFull();
 

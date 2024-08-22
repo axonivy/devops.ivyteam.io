@@ -9,8 +9,8 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
+import io.ivyteam.devops.branches.BranchRepository;
 import io.ivyteam.devops.branches.BranchesGrid;
-import io.ivyteam.devops.branches.BranchesRepository;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
@@ -19,7 +19,7 @@ import io.ivyteam.devops.view.View;
 public class UserView extends View implements HasUrlParameter<String> {
 
   @Autowired
-  BranchesRepository branches;
+  BranchRepository branches;
 
   @Autowired
   PullRequestRepository pullRequests;

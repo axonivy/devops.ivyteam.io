@@ -8,36 +8,22 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class Database {
 
   private static final String VERSION = "4";
   private static final Path PATH = Path.of("data", "githubV" + VERSION + ".db");
 
-  private static boolean exists() {
-    return Files.exists(PATH);
-  }
-
-  public static void create() {
-    try (var c = dbConnection()) {
-      try (var stmt = c.createStatement()) {
-        try (var in = Database.class.getResourceAsStream("schema.sql")) {
-          var sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-          stmt.executeUpdate(sql);
-        }
-      }
-    } catch (SQLException | IOException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  public static Connection connection() {
+  public Connection connection() {
     if (!exists()) {
       create();
     }
     return dbConnection();
   }
 
-  private static Connection dbConnection() {
+  private Connection dbConnection() {
     try {
       Files.createDirectories(PATH.getParent());
       Class.forName("org.sqlite.JDBC");
@@ -48,6 +34,23 @@ public class Database {
       return connection;
 
     } catch (ClassNotFoundException | SQLException | IOException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private boolean exists() {
+    return Files.exists(PATH);
+  }
+
+  private void create() {
+    try (var c = dbConnection()) {
+      try (var stmt = c.createStatement()) {
+        try (var in = Database.class.getResourceAsStream("schema.sql")) {
+          var sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+          stmt.executeUpdate(sql);
+        }
+      }
+    } catch (SQLException | IOException ex) {
       throw new RuntimeException(ex);
     }
   }

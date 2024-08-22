@@ -15,7 +15,9 @@ import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHRepository;
 
+import io.ivyteam.devops.branches.BranchRepository;
 import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Branch;
 import io.ivyteam.devops.repo.PullRequest;
 import io.ivyteam.devops.repo.Repo;
@@ -59,7 +61,7 @@ public class GitHubSynchronizer {
 
   public synchronized void run() {
     isRunning = true;
-    try (var connection = Database.connection()) {
+    try (var connection = new Database().connection()) {
       var org = SettingsManager.INSTANCE.get().gitHubOrg();
 
       notify("Loading repositories from GitHub Organization " + org, 0);
@@ -112,9 +114,16 @@ public class GitHubSynchronizer {
     var branches = repo.getBranches().values().stream()
         .map(b -> toBranch(b, ghRepo)).toList();
 
-    var rr = new Repo(name, archived, privateRepo, licence, securityMd, codeOfConduct, settingsLog,
-        prs, branches);
+    var rr = new Repo(name, archived, privateRepo, licence, securityMd, codeOfConduct, settingsLog);
     repository.create(rr);
+
+    for (var pr : prs) {
+      new PullRequestRepository().create(pr);
+    }
+
+    for (var branch : branches) {
+      new BranchRepository().create(branch);
+    }
   }
 
   private String license(GHRepository repo, String file) throws IOException {

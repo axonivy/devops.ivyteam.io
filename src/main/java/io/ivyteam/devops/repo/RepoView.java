@@ -1,5 +1,7 @@
 package io.ivyteam.devops.repo;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -14,12 +16,23 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
 
+import io.ivyteam.devops.branches.BranchRepository;
 import io.ivyteam.devops.branches.BranchesGrid;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
+import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
 
 @Route("/repository")
 public class RepoView extends View implements HasUrlParameter<String> {
+
+  @Autowired
+  private RepoRepository repos;
+
+  @Autowired
+  private BranchRepository branches;
+
+  @Autowired
+  private PullRequestRepository pullRequests;
 
   @Override
   public String title() {
@@ -28,7 +41,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
   @Override
   public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
-    var repo = RepoRepository.INSTANCE.all().stream()
+    var repo = repos.all().stream()
         .filter(r -> r.name().equals(parameter))
         .findAny()
         .orElseThrow();
@@ -38,14 +51,16 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var tabDetail = new Tab("Details");
     tabSheet.add(tabDetail, createDetail(repo));
 
-    var prCounter = new Span("Pull Requests (" + repo.prs().size() + ")");
+    var repoPrs = pullRequests.findByRepository(repo.name());
+    var prCounter = new Span("Pull Requests (" + repoPrs.size() + ")");
     var tabPrs = new Tab(prCounter);
-    var gridPrs = PullRequestGrid.create(repo.prs());
+    var gridPrs = PullRequestGrid.create(repoPrs);
     tabSheet.add(tabPrs, gridPrs);
 
-    var branchCounter = new Span("Branches (" + repo.branches().size() + ")");
+    var repoBranches = branches.findByRepo(repo.name());
+    var branchCounter = new Span("Branches (" + repoBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
-    var gridBranches = BranchesGrid.create(repo.branches());
+    var gridBranches = BranchesGrid.create(repoBranches);
     tabSheet.add(tabBranches, gridBranches);
 
     tabSheet.setSizeFull();
