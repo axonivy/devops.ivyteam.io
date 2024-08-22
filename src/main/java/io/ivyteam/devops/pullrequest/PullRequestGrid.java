@@ -13,7 +13,7 @@ import io.ivyteam.devops.users.User;
 public class PullRequestGrid {
 
   public static Grid<PullRequest> create(List<PullRequest> prs) {
-    var grid = new Grid<PullRequest>(prs);
+    var grid = new Grid<>(prs);
     grid.setSizeFull();
 
     grid

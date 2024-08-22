@@ -1,10 +1,10 @@
 package io.ivyteam.devops.repo;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.ivyteam.devops.branches.BranchesRepository;
 import io.ivyteam.devops.db.Database;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 
@@ -26,20 +26,8 @@ public class RepoRepository {
             var codeOfConduct = result.getString("codeOfConduct");
             var settingsLog = result.getString("settingsLog");
 
-            var prRepo = new PullRequestRepository();
-            var prs = prRepo.findByRepository(name);
-
-            var branches = new ArrayList<Branch>();
-            try (var stmtB = connection.prepareStatement("SELECT * FROM branch WHERE repository = ?")) {
-              stmtB.setString(1, name);
-              try (var resultB = stmtB.executeQuery()) {
-                while (resultB.next()) {
-                  var bName = resultB.getString("name");
-                  var lastCommitAuthor = resultB.getString("lastCommitAuthor");
-                  branches.add(new Branch(name, bName, lastCommitAuthor));
-                }
-              }
-            }
+            var prs = new PullRequestRepository().findByRepository(name);
+            var branches = new BranchesRepository().findByRepo(name);
 
             var repo = new Repo(name, archived, privateRepo, license, securityMd, codeOfConduct,
                 settingsLog, prs, branches);
@@ -72,73 +60,12 @@ public class RepoRepository {
         stmt.execute();
 
         for (var pr : repo.prs()) {
-          createPr(connection, pr);
+          new PullRequestRepository().create(pr);
         }
 
         for (var branch : repo.branches()) {
-          createBranch(connection, branch);
+          new BranchesRepository().create(branch);
         }
-      }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  private void createPr(Connection connection, PullRequest pr) throws SQLException {
-    try (var s = connection
-        .prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {
-      s.setString(1, pr.repository());
-      s.setLong(2, pr.id());
-      s.setString(3, pr.title());
-      s.setString(4, pr.user());
-      s.execute();
-    }
-  }
-
-  public void createPr(PullRequest pr) {
-    try (var connection = Database.connection()) {
-      createPr(connection, pr);
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  public void deletePr(PullRequest pr) {
-    try (var connection = Database.connection()) {
-      try (var s = connection.prepareStatement("DELETE FROM pull_request WHERE repository = ? AND id = ?")) {
-        s.setString(1, pr.repository());
-        s.setLong(2, pr.id());
-        s.execute();
-      }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  private void createBranch(Connection connection, Branch branch) throws SQLException {
-    try (var s = connection
-        .prepareStatement("INSERT INTO branch (repository, name, lastCommitAuthor) VALUES (?, ?, ?)")) {
-      s.setString(1, branch.repository());
-      s.setString(2, branch.name());
-      s.setString(3, branch.lastCommitAuthor());
-      s.execute();
-    }
-  }
-
-  public void createBranch(Branch branch) {
-    try (var connection = Database.connection()) {
-      createBranch(connection, branch);
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  public void deleteBranch(Branch branch) {
-    try (var connection = Database.connection()) {
-      try (var s = connection.prepareStatement("DELETE FROM branch WHERE repository = ? AND name = ?")) {
-        s.setString(1, branch.repository());
-        s.setString(2, branch.name());
-        s.execute();
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
