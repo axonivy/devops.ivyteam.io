@@ -1,4 +1,4 @@
-package io.ivyteam.devops.users;
+package io.ivyteam.devops.user;
 
 import java.util.Comparator;
 

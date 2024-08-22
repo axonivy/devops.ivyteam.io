@@ -1,4 +1,4 @@
-package io.ivyteam.devops.repo;
+package io.ivyteam.devops.branch;
 
 public record Branch(
     String repository,

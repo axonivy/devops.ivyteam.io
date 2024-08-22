@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.ivyteam.devops.branches.BranchRepository;
+import io.ivyteam.devops.branch.Branch;
+import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
-import io.ivyteam.devops.repo.Branch;
-import io.ivyteam.devops.repo.PullRequest;
 
 @RestController
 @RequestMapping("/github-webhook/")

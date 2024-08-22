@@ -1,17 +1,15 @@
-package io.ivyteam.devops.branches;
+package io.ivyteam.devops.branch;
 
 import java.util.Arrays;
 
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializablePredicate;
 
-import io.ivyteam.devops.repo.Branch;
-
-public class ExcludedBranchesFilter implements SerializablePredicate<Branch> {
+class ExcludedBranchesFilter implements SerializablePredicate<Branch> {
 
   private final TextField excludedBranchPrefixes;
 
-  public ExcludedBranchesFilter(TextField excludedBranchPrefixes) {
+  ExcludedBranchesFilter(TextField excludedBranchPrefixes) {
     this.excludedBranchPrefixes = excludedBranchPrefixes;
   }
 

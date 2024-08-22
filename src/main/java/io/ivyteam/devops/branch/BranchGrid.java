@@ -1,4 +1,4 @@
-package io.ivyteam.devops.branches;
+package io.ivyteam.devops.branch;
 
 import java.util.Comparator;
 import java.util.List;
@@ -7,10 +7,9 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
-import io.ivyteam.devops.repo.Branch;
-import io.ivyteam.devops.users.User;
+import io.ivyteam.devops.user.User;
 
-public class BranchesGrid {
+public class BranchGrid {
 
   public static Grid<Branch> create(List<Branch> branches) {
     var grid = new Grid<>(branches);

@@ -1,4 +1,4 @@
-package io.ivyteam.devops.users;
+package io.ivyteam.devops.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,8 +9,8 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
-import io.ivyteam.devops.branches.BranchRepository;
-import io.ivyteam.devops.branches.BranchesGrid;
+import io.ivyteam.devops.branch.BranchGrid;
+import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
@@ -40,7 +40,7 @@ public class UserView extends View implements HasUrlParameter<String> {
     var allBranches = branches.findByUser(user);
     var branchCounter = new Span("Branches (" + allBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
-    var gridBranches = BranchesGrid.create(allBranches);
+    var gridBranches = BranchGrid.create(allBranches);
     tabSheet.add(tabBranches, gridBranches);
 
     setContent(tabSheet);

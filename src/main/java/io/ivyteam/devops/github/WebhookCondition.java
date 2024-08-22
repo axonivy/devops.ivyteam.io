@@ -8,8 +8,8 @@ import io.ivyteam.devops.settings.SettingsManager;
 
 public class WebhookCondition implements Condition {
 
-    @Override
-    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        return "axonivy".equals(SettingsManager.INSTANCE.get().gitHubOrg());
-    }
+  @Override
+  public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+    return "axonivy".equals(SettingsManager.INSTANCE.get().gitHubOrg());
+  }
 }

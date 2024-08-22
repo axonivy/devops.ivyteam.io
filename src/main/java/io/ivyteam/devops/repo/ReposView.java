@@ -1,4 +1,4 @@
-package io.ivyteam.devops;
+package io.ivyteam.devops.repo;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -22,16 +22,14 @@ import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.github.GitHubRepoConfigurator;
 import io.ivyteam.devops.github.GitHubSynchronizer;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
-import io.ivyteam.devops.repo.Repo;
-import io.ivyteam.devops.repo.RepoRepository;
 import io.ivyteam.devops.view.View;
 
 @Route("")
-public class HomeView extends View {
+public class ReposView extends View {
 
   private final Grid<Repo> grid;
 
-  public HomeView(RepoRepository repos, PullRequestRepository prs) {
+  public ReposView(RepoRepository repos, PullRequestRepository prs) {
     grid = new Grid<>(repos.all());
 
     grid.addColumn(LitRenderer.<Repo>of("""

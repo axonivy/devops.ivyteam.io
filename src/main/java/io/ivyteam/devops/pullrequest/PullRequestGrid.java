@@ -7,8 +7,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
-import io.ivyteam.devops.repo.PullRequest;
-import io.ivyteam.devops.users.User;
+import io.ivyteam.devops.user.User;
 
 public class PullRequestGrid {
 
