@@ -1,6 +1,5 @@
 package io.ivyteam.devops.repo;
 
-import java.io.IOException;
 import java.util.Comparator;
 
 import com.vaadin.flow.component.Component;
@@ -20,9 +19,6 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.branch.BranchRepository;
-import io.ivyteam.devops.github.GitHubProvider;
-import io.ivyteam.devops.github.GitHubRepoConfigurator;
-import io.ivyteam.devops.github.GitHubSynchronizer;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
 
@@ -31,10 +27,7 @@ public class ReposView extends View {
 
   private final Grid<Repo> grid;
 
-  private GitHubSynchronizer synchronizer;
-
-  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
-      GitHubSynchronizer synchronizer) {
+  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches) {
     var repositories = repos.all();
     grid = new Grid<>(repositories);
     title.setText("Repositories (" + repositories.size() + ")");
@@ -81,7 +74,7 @@ public class ReposView extends View {
             icon.getElement().getThemeList().add("badge success");
             return icon;
           }
-          var icon = createIcon(VaadinIcon.HAMMER);
+          var icon = createIcon(VaadinIcon.CLOSE);
           icon.getElement().getThemeList().add("badge error");
           return icon;
         })
@@ -99,25 +92,11 @@ public class ReposView extends View {
         confirmed.getElement().getThemeList().add("badge success");
         return confirmed;
       }
-      var play = createIcon(VaadinIcon.PLAY);
-      play.getElement().getThemeList().add("badge");
-      play.setTooltipText(repo.settingsLog());
-      play.addClickListener(event -> updateSettings(repo));
-      play.setColor("blue");
-      return play;
+      var confirmed = createIcon(VaadinIcon.CLOSE);
+      confirmed.getElement().getThemeList().add("badge error");
+      return confirmed;
     })
         .setHeader("Settings")
-        .setWidth("10%");
-
-    grid.addComponentColumn(repo -> {
-      var play = createIcon(VaadinIcon.PLAY);
-      play.getElement().getThemeList().add("badge");
-      play.setTooltipText(repo.settingsLog());
-      play.addClickListener(event -> synch(repo));
-      play.setColor("blue");
-      return play;
-    })
-        .setHeader("Synch")
         .setWidth("10%");
 
     grid
@@ -125,10 +104,12 @@ public class ReposView extends View {
           var layout = new HorizontalLayout();
           if (repo.archived()) {
             var icon = createIcon(VaadinIcon.ARCHIVE);
+            icon.setTooltipText("Archived");
             layout.add(icon);
           }
           if (repo.privateRepo()) {
             var icon = createIcon(VaadinIcon.LOCK);
+            icon.setTooltipText("Private");
             layout.add(icon);
           }
           return layout;
@@ -172,26 +153,6 @@ public class ReposView extends View {
     var icon = vaadinIcon.create();
     icon.getStyle().set("padding", "var(--lumo-space-xs");
     return icon;
-  }
-
-  private void updateSettings(Repo repo) {
-    try {
-      var ghRepo = GitHubProvider.get().getRepository(repo.name());
-      new GitHubRepoConfigurator(ghRepo, false).run();
-      synch(repo);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void synch(Repo repo) {
-    try {
-      var ghRepo = GitHubProvider.get().getRepository(repo.name());
-      synchronizer.synch(ghRepo);
-      grid.getDataProvider().refreshAll();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private static class RepoFilter implements SerializablePredicate<Repo> {
