@@ -34,7 +34,7 @@ public class SettingsManager {
     settings.gitHubOrg(properties.getProperty(Settings.GITHUB_ORG, ""));
     settings.gitHubToken(properties.getProperty(Settings.GITHUB_TOKEN, ""));
     settings.excludedBranchPrefixes(properties.getProperty(Settings.EXCLUDED_BRANCH_PREFIXES,
-        "master,release/,stale/,dependabot/,gh-pages,dev10.0,dev11.1"));
+        "master,release/,stale/,dependabot/,gh-pages,dev/"));
     return settings;
   }
 

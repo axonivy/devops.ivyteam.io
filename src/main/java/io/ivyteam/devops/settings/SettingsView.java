@@ -81,6 +81,7 @@ public class SettingsView extends View {
   private void saveSettings() {
     settings.gitHubOrg(githubOrganization.getValue());
     settings.gitHubToken(githubToken.getValue());
+    settings.excludedBranchPrefixes(excludedBranchPrefixes.getValue());
     SettingsManager.INSTANCE.save(settings);
   }
 
