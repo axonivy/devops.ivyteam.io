@@ -2,7 +2,6 @@ package io.ivyteam.devops.github;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -14,19 +13,28 @@ import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
-import io.ivyteam.devops.db.Database;
 import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
 import io.ivyteam.devops.settings.SettingsManager;
 
+@Service
 public class GitHubSynchronizer {
 
-  public static final GitHubSynchronizer INSTANCE = new GitHubSynchronizer();
+  @Autowired
+  private RepoRepository repos;
+
+  @Autowired
+  private PullRequestRepository prs;
+
+  @Autowired
+  private BranchRepository branches;
 
   private boolean isRunning = false;
 
@@ -61,7 +69,7 @@ public class GitHubSynchronizer {
 
   public synchronized void run() {
     isRunning = true;
-    try (var connection = new Database().connection()) {
+    try {
       var org = SettingsManager.INSTANCE.get().gitHubOrg();
 
       notify("Loading repositories from GitHub Organization " + org, 0);
@@ -78,7 +86,7 @@ public class GitHubSynchronizer {
         synch(repo);
       }
       notify("Indexing finished", 1);
-    } catch (IOException | SQLException ex) {
+    } catch (IOException ex) {
       throw new RuntimeException(ex);
     } finally {
       isRunning = false;
@@ -96,8 +104,6 @@ public class GitHubSynchronizer {
 
     var settingsLog = new GitHubRepoConfigurator(repo, true).run().stream().collect(Collectors.joining("\n"));
 
-    var repository = new RepoRepository();
-
     var name = repo.getFullName();
     var archived = repo.isArchived();
     var privateRepo = repo.isPrivate();
@@ -106,24 +112,18 @@ public class GitHubSynchronizer {
     var codeOfConduct = license(repo, "CODE_OF_CONDUCT.md");
     var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
 
-    var prs = gitHubPrs.stream()
-        .map(this::toPullRequest)
-        .toList();
-
     var ghRepo = repo;
-    var branches = repo.getBranches().values().stream()
-        .map(b -> toBranch(b, ghRepo)).toList();
 
     var rr = new Repo(name, archived, privateRepo, licence, securityMd, codeOfConduct, settingsLog);
-    repository.create(rr);
+    repos.create(rr);
 
-    for (var pr : prs) {
-      new PullRequestRepository().create(pr);
-    }
+    gitHubPrs.stream()
+        .map(this::toPullRequest)
+        .forEach(pr -> prs.create(pr));
 
-    for (var branch : branches) {
-      new BranchRepository().create(branch);
-    }
+    repo.getBranches().values().stream()
+        .map(b -> toBranch(b, ghRepo))
+        .forEach(b -> branches.create(b));
   }
 
   private String license(GHRepository repo, String file) throws IOException {

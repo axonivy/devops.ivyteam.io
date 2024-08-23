@@ -31,7 +31,10 @@ public class ReposView extends View {
 
   private final Grid<Repo> grid;
 
-  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches) {
+  private GitHubSynchronizer synchronizer;
+
+  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
+      GitHubSynchronizer synchronizer) {
     var repositories = repos.all();
     grid = new Grid<>(repositories);
     title.setText("Repositories (" + repositories.size() + ")");
@@ -184,7 +187,7 @@ public class ReposView extends View {
   private void synch(Repo repo) {
     try {
       var ghRepo = GitHubProvider.get().getRepository(repo.name());
-      GitHubSynchronizer.INSTANCE.synch(ghRepo);
+      synchronizer.synch(ghRepo);
       grid.getDataProvider().refreshAll();
     } catch (IOException e) {
       throw new RuntimeException(e);
