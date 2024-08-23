@@ -12,12 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.user.User;
+import io.ivyteam.devops.user.UserRepository;
 
 @Repository
 public class PullRequestRepository {
 
   @Autowired
   private Database db;
+
+  @Autowired
+  private UserRepository users;
 
   public List<PullRequest> all() {
     try (var connection = db.connection()) {
@@ -52,6 +57,11 @@ public class PullRequestRepository {
   }
 
   public void create(PullRequest pr) {
+    var user = new User(pr.user());
+    if (!users.exists(user)) {
+      users.create(user);
+    }
+
     try (var connection = db.connection()) {
       try (var s = connection
           .prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {
