@@ -30,15 +30,12 @@ public class GitHubWebhookController {
     return "OK";
   }
 
-  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=create")
-  public ResponseEntity<Branch> createBranch(@RequestBody BranchBean bean) {
+  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=push")
+  public ResponseEntity<Branch> push(@RequestBody PushBean bean) {
     validateBean(bean);
-    if ("branch".equals(bean.ref_type)) {
-      var branch = bean.toBranch();
-      branches.create(branch);
-      return ResponseEntity.ok().body(branch);
-    }
-    throw new RuntimeException("ref type not supported: " + bean.ref_type);
+    var branch = bean.toBranch();
+    branches.create(branch);
+    return ResponseEntity.ok().body(branch);
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=delete")
@@ -69,6 +66,7 @@ public class GitHubWebhookController {
 
   private void validateBean(Object bean) {
     switch (bean) {
+      case PushBean p -> validateOrg(p.organization);
       case BranchBean b -> validateOrg(b.organization);
       case PullRequestBean pr -> validateOrg(pr.organization);
       default -> throw new RuntimeException("Invalid request body provided: " + bean);
@@ -78,6 +76,18 @@ public class GitHubWebhookController {
   private void validateOrg(Organization org) {
     if (org == null || org.login == null || !org.login.equals(SettingsManager.INSTANCE.get().gitHubOrg())) {
       throw new RuntimeException("Invalid organization provided: " + org);
+    }
+  }
+
+  record PushBean(
+      String ref,
+      Repository repository,
+      Commit head_commit,
+      Organization organization) {
+
+    Branch toBranch() {
+      var shortRef = ref.replace("refs/heads/", "");
+      return new Branch(this.repository.full_name, shortRef, this.head_commit.author.username);
     }
   }
 
@@ -103,6 +113,14 @@ public class GitHubWebhookController {
       return new PullRequest(this.repository.full_name, this.pull_request.number, this.pull_request.title,
           this.pull_request.user.login);
     }
+  }
+
+  record Commit(String id, String timestamp, String url, Author author) {
+
+  }
+
+  record Author(String username) {
+
   }
 
   record Organization(String login) {
