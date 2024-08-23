@@ -1,5 +1,8 @@
 package io.ivyteam.devops.github.webhook;
 
+import java.time.ZonedDateTime;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,15 +33,12 @@ public class GitHubWebhookController {
     return "OK";
   }
 
-  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=create")
-  public ResponseEntity<Branch> createBranch(@RequestBody BranchBean bean) {
+  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=push")
+  public ResponseEntity<Branch> push(@RequestBody PushBean bean) {
     validateBean(bean);
-    if ("branch".equals(bean.ref_type)) {
-      var branch = bean.toBranch();
-      branches.create(branch);
-      return ResponseEntity.ok().body(branch);
-    }
-    throw new RuntimeException("ref type not supported: " + bean.ref_type);
+    var branch = bean.toBranch();
+    branches.create(branch);
+    return ResponseEntity.ok().body(branch);
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=delete")
@@ -69,6 +69,7 @@ public class GitHubWebhookController {
 
   private void validateBean(Object bean) {
     switch (bean) {
+      case PushBean p -> validateOrg(p.organization);
       case BranchBean b -> validateOrg(b.organization);
       case PullRequestBean pr -> validateOrg(pr.organization);
       default -> throw new RuntimeException("Invalid request body provided: " + bean);
@@ -81,15 +82,35 @@ public class GitHubWebhookController {
     }
   }
 
+  private static Date tsToDate(String timestamp) {
+    var instant = ZonedDateTime.parse(timestamp).toInstant();
+    return Date.from(instant);
+  }
+
+  record PushBean(
+      String ref,
+      Repository repository,
+      Commit head_commit,
+      Organization organization) {
+
+    Branch toBranch() {
+      var shortRef = ref.replace("refs/heads/", "");
+      var authoredDate = tsToDate(this.head_commit.timestamp);
+      return new Branch(this.repository.full_name, shortRef, this.head_commit.author.username, authoredDate);
+    }
+  }
+
   record BranchBean(
       String ref,
       String ref_type,
       Repository repository,
       User sender,
-      Organization organization) {
+      Organization organization,
+      String updated_at) {
 
     Branch toBranch() {
-      return new Branch(this.repository.full_name, this.ref, this.sender.login);
+      var authoredDate = tsToDate(this.updated_at);
+      return new Branch(this.repository.full_name, this.ref, this.sender.login, authoredDate);
     }
   }
 
@@ -97,12 +118,21 @@ public class GitHubWebhookController {
       String action,
       PrDetail pull_request,
       Repository repository,
-      Organization organization) {
+      Organization organization,
+      String updated_at) {
 
     PullRequest toPullRequest() {
       return new PullRequest(this.repository.full_name, this.pull_request.number, this.pull_request.title,
-          this.pull_request.user.login);
+          this.pull_request.user.login, this.pull_request.head.ref);
     }
+  }
+
+  record Commit(String id, String timestamp, String url, Author author) {
+
+  }
+
+  record Author(String username) {
+
   }
 
   record Organization(String login) {
@@ -115,7 +145,10 @@ public class GitHubWebhookController {
 
   }
 
-  record PrDetail(long number, String title, User user) {
+  record PrDetail(long number, String title, User user, Head head) {
 
+  }
+
+  record Head(String ref) {
   }
 }

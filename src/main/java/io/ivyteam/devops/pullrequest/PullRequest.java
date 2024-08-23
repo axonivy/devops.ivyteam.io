@@ -4,7 +4,8 @@ public record PullRequest(
     String repository,
     long id,
     String title,
-    String user) {
+    String user,
+    String branchName) {
 
   public String repoLink() {
     return "/repository/" + repository;

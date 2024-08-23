@@ -1,5 +1,6 @@
 package io.ivyteam.devops.branch;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,10 +65,12 @@ public class BranchRepository {
 
     try (var connection = db.connection()) {
       try (var s = connection
-          .prepareStatement("INSERT INTO branch (repository, name, lastCommitAuthor) VALUES (?, ?, ?)")) {
+          .prepareStatement(
+              "INSERT OR REPLACE INTO branch (repository, name, lastCommitAuthor, authoredDate) VALUES (?, ?, ?, ?)")) {
         s.setString(1, branch.repository());
         s.setString(2, branch.name());
         s.setString(3, branch.lastCommitAuthor());
+        s.setDate(4, new Date(branch.authoredDate().getTime()));
         s.execute();
       }
     } catch (SQLException ex) {
@@ -102,7 +105,8 @@ public class BranchRepository {
     var repository = result.getString("repository");
     var name = result.getString("name");
     var lastCommitAuthor = result.getString("lastCommitAuthor");
-    return new Branch(repository, name, lastCommitAuthor);
+    var authoredDate = result.getDate("authoredDate");
+    return new Branch(repository, name, lastCommitAuthor, authoredDate);
   }
 
   public Map<String, Long> countByRepo() {
