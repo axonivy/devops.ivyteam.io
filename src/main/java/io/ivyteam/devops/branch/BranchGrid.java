@@ -1,5 +1,6 @@
 package io.ivyteam.devops.branch;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ public class BranchGrid {
 
   private static final String PREFIXES_KEY = "filter";
   private static final String SEARCH_KEY = "search";
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
   private final List<Branch> branches;
   private final Class<? extends Component> navigationTarget;
@@ -65,7 +67,14 @@ public class BranchGrid {
         .setHeader("Name")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::name))
-        .setWidth("40%");
+        .setWidth("30%");
+
+    grid
+        .addColumn(branch -> DATE_FORMAT.format(branch.authoredDate()))
+        .setHeader("Updated")
+        .setWidth("10%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(Branch::authoredDate));
 
     var layout = new VerticalLayout();
     layout.setHeightFull();

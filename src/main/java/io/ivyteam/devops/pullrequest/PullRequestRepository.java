@@ -64,11 +64,13 @@ public class PullRequestRepository {
 
     try (var connection = db.connection()) {
       try (var s = connection
-          .prepareStatement("INSERT INTO pull_request (repository, id, title, user) VALUES (?, ?, ?, ?)")) {
+          .prepareStatement(
+              "INSERT INTO pull_request (repository, id, title, user, branchName) VALUES (?, ?, ?, ?, ?)")) {
         s.setString(1, pr.repository());
         s.setLong(2, pr.id());
         s.setString(3, pr.title());
         s.setString(4, pr.user());
+        s.setString(5, pr.branchName());
         s.execute();
       }
     } catch (SQLException ex) {
@@ -104,7 +106,8 @@ public class PullRequestRepository {
     var id = result.getLong("id");
     var title = result.getString("title");
     var user = result.getString("user");
-    return new PullRequest(repository, id, title, user);
+    var branchName = result.getString("branchName");
+    return new PullRequest(repository, id, title, user, branchName);
   }
 
   public Map<String, Long> countByRepo() {

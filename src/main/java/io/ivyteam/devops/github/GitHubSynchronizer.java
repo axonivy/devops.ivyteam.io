@@ -141,7 +141,7 @@ public class GitHubSynchronizer {
       var title = pr.getTitle();
       var user = pr.getUser().getLogin();
       var id = pr.getNumber();
-      var p = new PullRequest(pr.getRepository().getFullName(), id, title, user);
+      var p = new PullRequest(pr.getRepository().getFullName(), id, title, user, pr.getHead().getRef());
       return p;
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -156,7 +156,7 @@ public class GitHubSynchronizer {
       if (author != null) {
         lastCommitAuthor = author.getLogin();
       }
-      return new Branch(repo.getFullName(), branch.getName(), lastCommitAuthor);
+      return new Branch(repo.getFullName(), branch.getName(), lastCommitAuthor, lastCommit.getAuthoredDate());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

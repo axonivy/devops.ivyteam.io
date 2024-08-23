@@ -1,9 +1,12 @@
 package io.ivyteam.devops.branch;
 
+import java.util.Date;
+
 public record Branch(
     String repository,
     String name,
-    String lastCommitAuthor) {
+    String lastCommitAuthor,
+    Date authoredDate) {
 
   public String repoLink() {
     return "/repository/" + repository;
