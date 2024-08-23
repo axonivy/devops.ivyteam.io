@@ -130,9 +130,7 @@ public class BranchGrid {
     if (!searchValue.isEmpty()) {
       params.put(SEARCH_KEY, searchValue);
     }
-    if (!excludedPrefixes.isEmpty()) {
-      params.put(PREFIXES_KEY, excludedPrefixes);
-    }
+    params.put(PREFIXES_KEY, excludedPrefixes);
     var queryParams = params.isEmpty() ? QueryParameters.empty() : QueryParameters.simple(params);
     var updatedLocation = new Location(baseUrl, queryParams);
     UI.getCurrent().getPage().getHistory().replaceState(null, updatedLocation);
