@@ -1,5 +1,6 @@
 package io.ivyteam.devops.branch;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.List;
 
@@ -14,6 +15,8 @@ public class BranchGrid {
   public static Grid<Branch> create(List<Branch> branches) {
     var grid = new Grid<>(branches);
     grid.setSizeFull();
+
+    var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
     grid.addColumn(
         new ComponentRenderer<>(
@@ -34,7 +37,14 @@ public class BranchGrid {
         .setHeader("Name")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::name))
-        .setWidth("40%");
+        .setWidth("30%");
+
+    grid
+        .addColumn(branch -> formatter.format(branch.authoredDate()))
+        .setHeader("Updated")
+        .setWidth("10%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(Branch::authoredDate));
     return grid;
   }
 }

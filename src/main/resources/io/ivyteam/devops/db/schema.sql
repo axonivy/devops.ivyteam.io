@@ -21,6 +21,7 @@ CREATE TABLE branch (
     repository VARCHAR(200) NOT NULL,
     name VARCHAR(200) NOT NULL,
     lastCommitAuthor VARCHAR(200) NOT NULL,
+    authoredDate DATE NOT NULL,
     PRIMARY KEY (repository, name),
     FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE
 );
