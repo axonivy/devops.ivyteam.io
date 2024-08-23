@@ -119,11 +119,11 @@ public class GitHubSynchronizer {
 
     gitHubPrs.stream()
         .map(this::toPullRequest)
-        .forEach(pr -> prs.create(pr));
+        .forEach(prs::create);
 
     repo.getBranches().values().stream()
         .map(b -> toBranch(b, ghRepo))
-        .forEach(b -> branches.create(b));
+        .forEach(branches::create);
   }
 
   private String license(GHRepository repo, String file) throws IOException {
