@@ -10,8 +10,7 @@ import io.ivyteam.devops.github.GitHubSynchronizer.Progress;
 @Component
 public class GitHubReindexingJob {
 
-  // 12am every day
-  @Scheduled(cron = "0 * * * * *")
+  @Scheduled(cron = "0 11 * * * ?")
   public void reindex() {
     Consumer<Progress> listener = progress -> System.out.println(progress.message());
     try {

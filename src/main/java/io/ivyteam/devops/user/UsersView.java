@@ -16,7 +16,9 @@ public class UsersView extends View {
 
   @Autowired
   public UsersView(UserRepository users) {
-    var grid = new Grid<>(users.all());
+    var allUsers = users.all();
+    title.setText("Users (" + allUsers.size() + ")");
+    var grid = new Grid<>(allUsers);
     grid.setSizeFull();
 
     grid
@@ -27,10 +29,5 @@ public class UsersView extends View {
         .setComparator(Comparator.comparing(User::name));
 
     setContent(grid);
-  }
-
-  @Override
-  public String title() {
-    return "Users";
   }
 }
