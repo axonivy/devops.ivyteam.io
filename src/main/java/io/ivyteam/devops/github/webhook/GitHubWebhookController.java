@@ -38,7 +38,7 @@ public class GitHubWebhookController {
       branches.create(branch);
       return ResponseEntity.ok().body(branch);
     }
-    return ResponseEntity.notFound().build();
+    throw new RuntimeException("ref type not supported: " + bean.ref_type);
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=delete")
@@ -49,7 +49,7 @@ public class GitHubWebhookController {
       branches.delete(branch);
       return ResponseEntity.ok().body(branch);
     }
-    return ResponseEntity.notFound().build();
+    throw new RuntimeException("ref type not supported: " + bean.ref_type);
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=pull_request")
@@ -64,7 +64,7 @@ public class GitHubWebhookController {
       prs.delete(pr);
       return ResponseEntity.ok().body(pr);
     }
-    return ResponseEntity.notFound().build();
+    throw new RuntimeException("PR action not supported:" + bean.action);
   }
 
   private void validateBean(Object bean) {
