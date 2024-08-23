@@ -18,6 +18,7 @@ CREATE TABLE pull_request (
     id INTEGER NOT NULL,
     title VARCHAR(400) NOT NULL,
     user VARCHAR(200) NOT NULL,
+    branchName VARCHAR(400) NOT NULL,
     PRIMARY KEY (repository, id),
     FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES user (name) ON DELETE CASCADE
