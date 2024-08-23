@@ -27,6 +27,8 @@ public abstract class View extends AppLayout {
     setPrimarySection(Section.DRAWER);
   }
 
+  // asdsad
+
   private SideNav getSideNav() {
     var sideNav = new SideNav();
     sideNav.addItem(new SideNavItem("Repositories", "/", VaadinIcon.DATABASE.create()));
