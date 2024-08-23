@@ -27,7 +27,7 @@ pipeline {
             maven cmd: "clean install -Pproduction"
           }
 
-          def image = docker.build("ivyteam-devops:latest", ".")
+          def image = docker.build("devops:latest", ".")
           if (env.BRANCH_NAME == 'master') {
             docker.withRegistry('https://docker-registry.ivyteam.io', 'docker-registry.ivyteam.io') {            
               image.push()
