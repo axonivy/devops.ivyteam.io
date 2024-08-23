@@ -28,7 +28,9 @@ public class BranchesView extends View {
   private String excludedPrefixes = "";
 
   public BranchesView(BranchRepository branches) {
-    var grid = BranchGrid.create(branches.all());
+    var allBranches = branches.all();
+    title.setText("Branches (" + allBranches.size() + ")");
+    var grid = BranchGrid.create(allBranches);
     var layout = new VerticalLayout();
     layout.setHeightFull();
 
@@ -88,10 +90,5 @@ public class BranchesView extends View {
     var queryParams = params.isEmpty() ? QueryParameters.empty() : QueryParameters.simple(params);
     var updatedLocation = new Location(baseUrl, queryParams);
     UI.getCurrent().getPage().getHistory().replaceState(null, updatedLocation);
-  }
-
-  @Override
-  public String title() {
-    return "Branches";
   }
 }

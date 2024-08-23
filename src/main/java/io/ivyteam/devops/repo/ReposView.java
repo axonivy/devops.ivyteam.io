@@ -7,13 +7,14 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.LitRenderer;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.Route;
@@ -30,13 +31,11 @@ public class ReposView extends View {
   private final Grid<Repo> grid;
 
   public ReposView(RepoRepository repos, PullRequestRepository prs) {
-    grid = new Grid<>(repos.all());
+    var repositories = repos.all();
+    grid = new Grid<>(repositories);
+    title.setText("Repositories (" + repositories.size() + ")");
 
-    grid.addColumn(LitRenderer.<Repo>of("""
-           <a href="${item.link}">${item.name}</a>
-        """)
-        .withProperty("link", p -> p.link())
-        .withProperty("name", p -> p.name()))
+    grid.addColumn(new ComponentRenderer<>(p -> new Anchor(p.link(), p.name())))
         .setHeader("Name")
         .setWidth("40%")
         .setSortable(true)
@@ -161,11 +160,6 @@ public class ReposView extends View {
     inputLayout.add(search);
     inputLayout.add(checkboxArchived);
     return inputLayout;
-  }
-
-  @Override
-  public String title() {
-    return "Repositories";
   }
 
   private Icon createIcon(VaadinIcon vaadinIcon) {
