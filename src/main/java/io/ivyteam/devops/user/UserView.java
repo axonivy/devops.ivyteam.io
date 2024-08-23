@@ -8,6 +8,8 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 import io.ivyteam.devops.branch.BranchGrid;
 import io.ivyteam.devops.branch.BranchRepository;
@@ -40,7 +42,9 @@ public class UserView extends View implements HasUrlParameter<String> {
     var allBranches = branches.findByUser(user);
     var branchCounter = new Span("Branches (" + allBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
-    var gridBranches = BranchGrid.create(allBranches);
+
+    var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, user);
+    var gridBranches = new BranchGrid(allBranches, UserView.class, routeParameters).create();
     tabSheet.add(tabBranches, gridBranches);
 
     setContent(tabSheet);

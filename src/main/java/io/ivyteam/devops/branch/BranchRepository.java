@@ -13,12 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import io.ivyteam.devops.db.Database;
+import io.ivyteam.devops.user.User;
+import io.ivyteam.devops.user.UserRepository;
 
 @Repository
 public class BranchRepository {
 
   @Autowired
   private Database db;
+
+  @Autowired
+  private UserRepository users;
 
   public List<Branch> all() {
     try (var connection = db.connection()) {
@@ -53,6 +58,11 @@ public class BranchRepository {
   }
 
   public void create(Branch branch) {
+    var user = new User(branch.lastCommitAuthor());
+    if (!users.exists(user)) {
+      users.create(user);
+    }
+
     try (var connection = db.connection()) {
       try (var s = connection
           .prepareStatement(

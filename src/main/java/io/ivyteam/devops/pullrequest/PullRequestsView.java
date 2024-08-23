@@ -4,7 +4,7 @@ import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.view.View;
 
-@Route("/pullrequests")
+@Route("/pulls")
 public class PullRequestsView extends View {
 
   public PullRequestsView(PullRequestRepository prs) {

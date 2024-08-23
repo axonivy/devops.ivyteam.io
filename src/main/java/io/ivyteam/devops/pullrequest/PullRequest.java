@@ -7,6 +7,10 @@ public record PullRequest(
     String user,
     String branchName) {
 
+  public String repoLink() {
+    return "/repository/" + repository;
+  }
+
   public String ghLink() {
     return "https://github.com/" + repository + "/pull/" + id;
   }

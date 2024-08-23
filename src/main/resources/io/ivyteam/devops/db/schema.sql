@@ -1,3 +1,8 @@
+CREATE TABLE user (
+    name VARCHAR(200) NOT NULL,
+    PRIMARY KEY (name)
+);
+
 CREATE TABLE repository (
     name VARCHAR(200) PRIMARY KEY NOT NULL,
     archived INTEGER NOT NULL,
@@ -14,7 +19,8 @@ CREATE TABLE pull_request (
     title VARCHAR(400) NOT NULL,
     user VARCHAR(200) NOT NULL,
     PRIMARY KEY (repository, id),
-    FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE
+    FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES user (name) ON DELETE CASCADE
 );
 
 CREATE TABLE branch (
@@ -23,5 +29,6 @@ CREATE TABLE branch (
     lastCommitAuthor VARCHAR(200) NOT NULL,
     authoredDate DATE NOT NULL,
     PRIMARY KEY (repository, name),
-    FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE
+    FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,
+    FOREIGN KEY (lastCommitAuthor) REFERENCES user (name) ON DELETE CASCADE
 );

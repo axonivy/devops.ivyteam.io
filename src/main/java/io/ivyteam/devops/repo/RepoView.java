@@ -1,8 +1,11 @@
 package io.ivyteam.devops.repo;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
@@ -14,10 +17,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.WildcardParameter;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 import io.ivyteam.devops.branch.BranchGrid;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.github.GitHubProvider;
+import io.ivyteam.devops.github.GitHubRepoConfigurator;
+import io.ivyteam.devops.github.GitHubSynchronizer;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
@@ -33,6 +41,9 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
   @Autowired
   private PullRequestRepository pullRequests;
+
+  @Autowired
+  private GitHubSynchronizer synchronizer;
 
   @Override
   public String title() {
@@ -60,7 +71,8 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var repoBranches = branches.findByRepo(repo.name());
     var branchCounter = new Span("Branches (" + repoBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
-    var gridBranches = BranchGrid.create(repoBranches);
+    var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, parameter);
+    var gridBranches = new BranchGrid(repoBranches, RepoView.class, routeParameters).create();
     tabSheet.add(tabBranches, gridBranches);
 
     tabSheet.setSizeFull();
@@ -100,6 +112,16 @@ public class RepoView extends View implements HasUrlParameter<String> {
     tabSheet.setSizeFull();
     formLayout.add(tabSheet);
 
+    var btnSynch = new Button("Reindex");
+    btnSynch.addClickListener(event -> synch(repo));
+    btnSynch.setMaxWidth("150px");
+    formLayout.add(btnSynch);
+
+    var btnUpdateSettings = new Button("Update Settings");
+    btnUpdateSettings.addClickListener(event -> updateSettings(repo));
+    btnUpdateSettings.setMaxWidth("150px");
+    formLayout.add(btnUpdateSettings);
+
     return formLayout;
   }
 
@@ -110,5 +132,24 @@ public class RepoView extends View implements HasUrlParameter<String> {
     txt.getStyle().set("width", "100%");
     txt.setHeight("800px");
     return txt;
+  }
+
+  private void synch(Repo repo) {
+    try {
+      var ghRepo = GitHubProvider.get().getRepository(repo.name());
+      synchronizer.synch(ghRepo);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void updateSettings(Repo repo) {
+    try {
+      var ghRepo = GitHubProvider.get().getRepository(repo.name());
+      new GitHubRepoConfigurator(ghRepo, false).run();
+      synch(repo);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

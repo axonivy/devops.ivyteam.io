@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class Database {
 
   private static final String VERSION = "5";
-  private static final Path PATH = Path.of("data", "githubV" + VERSION + ".db");
+  private static final Path PATH = Path.of("data", "devopsV" + VERSION + ".db");
 
   public Connection connection() {
     if (!exists()) {

@@ -14,7 +14,7 @@ public class GitHubReindexingJob {
   @Autowired
   private GitHubSynchronizer synchronizer;
 
-  @Scheduled(cron = "0 11 * * * ?")
+  @Scheduled(cron = "0 11 0 * * ?")
   public void reindex() {
     Consumer<Progress> listener = progress -> System.out.println(progress.message());
     try {
