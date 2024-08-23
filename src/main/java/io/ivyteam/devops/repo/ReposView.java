@@ -19,6 +19,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.Route;
 
+import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.github.GitHubRepoConfigurator;
 import io.ivyteam.devops.github.GitHubSynchronizer;
@@ -30,7 +31,7 @@ public class ReposView extends View {
 
   private final Grid<Repo> grid;
 
-  public ReposView(RepoRepository repos, PullRequestRepository prs) {
+  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches) {
     var repositories = repos.all();
     grid = new Grid<>(repositories);
     title.setText("Repositories (" + repositories.size() + ")");
@@ -41,9 +42,10 @@ public class ReposView extends View {
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
+    var prCount = prs.countByRepo();
     grid
         .addComponentColumn(repo -> {
-          var counter = new Span(String.valueOf("n.a."));
+          var counter = new Span(String.valueOf(prCount.getOrDefault(repo.name(), 0L)));
           counter.getElement().getThemeList().add("badge pill small contrast");
           counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
           return counter;
@@ -51,11 +53,12 @@ public class ReposView extends View {
         .setHeader("PRs")
         .setWidth("10%")
         .setSortable(true)
-        .setComparator(Comparator.comparing(repo -> 0));
+        .setComparator(Comparator.comparing(repo -> prCount.getOrDefault(repo.name(), 0L)));
 
+    var branchCount = branches.countByRepo();
     grid
         .addComponentColumn(repo -> {
-          var counter = new Span(String.valueOf("n.a."));
+          var counter = new Span(String.valueOf(branchCount.getOrDefault(repo.name(), 0L)));
           counter.getElement().getThemeList().add("badge pill small contrast");
           counter.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
           return counter;
@@ -63,7 +66,7 @@ public class ReposView extends View {
         .setHeader("Branches")
         .setWidth("10%")
         .setSortable(true)
-        .setComparator(Comparator.comparing(r -> 0));
+        .setComparator(Comparator.comparing(repo -> branchCount.getOrDefault(repo.name(), 0L)));
 
     grid
         .addComponentColumn(repo -> {
