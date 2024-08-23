@@ -1,7 +1,5 @@
 package io.ivyteam.devops.settings;
 
-import java.util.function.Consumer;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -32,7 +30,7 @@ public class SettingsView extends View {
 
   private static Thread synchronizer;
 
-  public SettingsView() {
+  public SettingsView(GitHubSynchronizer syncher) {
     this.settings = SettingsManager.INSTANCE.get();
 
     var div = new VerticalLayout();
@@ -40,19 +38,17 @@ public class SettingsView extends View {
     reindexButton = new Button("Reindex");
     var ui = UI.getCurrent();
 
-    reindexButton.setVisible(!GitHubSynchronizer.INSTANCE.isRunning());
+    reindexButton.setVisible(!syncher.isRunning());
 
-    if (GitHubSynchronizer.INSTANCE.isRunning()) {
-      updateUi(ui, GitHubSynchronizer.INSTANCE.getProgress());
-      Consumer<Progress> listener = progress -> updateUi(ui, progress);
-      GitHubSynchronizer.INSTANCE.addListener(listener);
+    if (syncher.isRunning()) {
+      updateUi(ui, syncher.getProgress());
+      syncher.addListener(progress -> updateUi(ui, progress));
     }
 
     reindexButton.addClickListener(clickEvent -> {
       reindexButton.setVisible(false);
-      Consumer<Progress> listener = progress -> updateUi(ui, progress);
-      GitHubSynchronizer.INSTANCE.addListener(listener);
-      synchronizer = new Thread(() -> GitHubSynchronizer.INSTANCE.run());
+      syncher.addListener(progress -> updateUi(ui, progress));
+      synchronizer = new Thread(() -> syncher.run());
       synchronizer.start();
     });
 
@@ -73,9 +69,9 @@ public class SettingsView extends View {
     div.add(formLayout);
 
     progressBarLabelText = new NativeLabel();
-    progressBarLabelText.setVisible(GitHubSynchronizer.INSTANCE.isRunning());
+    progressBarLabelText.setVisible(syncher.isRunning());
     progressBar = new ProgressBar();
-    progressBar.setVisible(GitHubSynchronizer.INSTANCE.isRunning());
+    progressBar.setVisible(syncher.isRunning());
 
     div.add(reindexButton, progressBarLabelText, progressBar);
 
