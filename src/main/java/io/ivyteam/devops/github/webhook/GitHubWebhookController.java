@@ -118,8 +118,7 @@ public class GitHubWebhookController {
       String action,
       PrDetail pull_request,
       Repository repository,
-      Organization organization,
-      String updated_at) {
+      Organization organization) {
 
     PullRequest toPullRequest() {
       return new PullRequest(this.repository.full_name, this.pull_request.number, this.pull_request.title,
