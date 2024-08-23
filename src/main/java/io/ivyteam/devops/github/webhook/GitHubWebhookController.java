@@ -1,4 +1,4 @@
-package io.ivyteam.devops.github;
+package io.ivyteam.devops.github.webhook;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
@@ -17,7 +17,7 @@ import io.ivyteam.devops.pullrequest.PullRequestRepository;
 
 @RestController
 @RequestMapping("/github-webhook/")
-@Conditional(WebhookCondition.class)
+@Conditional(GitHubWebhookCondition.class)
 public class GitHubWebhookController {
 
   @Autowired

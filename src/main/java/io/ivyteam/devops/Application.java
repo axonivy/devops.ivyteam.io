@@ -5,6 +5,7 @@ import java.time.Clock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
@@ -15,6 +16,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 @SpringBootApplication
 @Theme(value = "my-theme", variant = Lumo.LIGHT)
 @Push
+@EnableScheduling
 public class Application implements AppShellConfigurator {
 
   @Bean

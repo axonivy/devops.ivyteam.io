@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 import io.ivyteam.devops.github.GitHubSynchronizer.Progress;
 
 @Component
-public class ReindexingJob {
+public class GitHubReindexingJob {
 
   // 12am every day
-  @Scheduled(cron = "0 0 0 * * ?")
+  @Scheduled(cron = "0 * * * * *")
   public void reindex() {
     Consumer<Progress> listener = progress -> System.out.println(progress.message());
     try {
