@@ -7,6 +7,6 @@ for build automation.
 
 - Run `mvn spring-boot:run` to start the website on local machine.
 - Go to `http://localhost:8080/settings` configure the GitHub Organisation
-e.g. `axonivy` and configure a GitHub token.
+  e.g. `axonivy` and configure a GitHub token.
 
-sds
+sdsssss
