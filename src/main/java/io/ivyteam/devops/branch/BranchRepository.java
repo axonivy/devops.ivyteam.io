@@ -4,7 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -91,5 +93,23 @@ public class BranchRepository {
     var name = result.getString("name");
     var lastCommitAuthor = result.getString("lastCommitAuthor");
     return new Branch(repository, name, lastCommitAuthor);
+  }
+
+  public Map<String, Long> countByRepo() {
+    try (var connection = db.connection()) {
+      try (var s = connection.prepareStatement("SELECT repository, COUNT(*) FROM branch GROUP BY repository")) {
+        try (var result = s.executeQuery()) {
+          var count = new HashMap<String, Long>();
+          while (result.next()) {
+            var repo = result.getString("repository");
+            var counter = result.getLong("COUNT(*)");
+            count.put(repo, counter);
+          }
+          return count;
+        }
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 }
