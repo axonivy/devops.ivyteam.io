@@ -17,7 +17,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.WildcardParameter;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 import io.ivyteam.devops.branch.BranchGrid;
 import io.ivyteam.devops.branch.BranchRepository;
@@ -69,7 +71,8 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var repoBranches = branches.findByRepo(repo.name());
     var branchCounter = new Span("Branches (" + repoBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
-    var gridBranches = BranchGrid.create(repoBranches);
+    var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, parameter);
+    var gridBranches = new BranchGrid(repoBranches, RepoView.class, routeParameters).create();
     tabSheet.add(tabBranches, gridBranches);
 
     tabSheet.setSizeFull();
