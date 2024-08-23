@@ -67,7 +67,7 @@ public class BranchGrid {
         .setHeader("Name")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::name))
-        .setWidth("40%");
+        .setWidth("30%");
 
     grid
         .addColumn(branch -> DATE_FORMAT.format(branch.authoredDate()))

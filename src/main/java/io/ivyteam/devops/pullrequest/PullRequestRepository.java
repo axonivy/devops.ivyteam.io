@@ -65,7 +65,7 @@ public class PullRequestRepository {
     try (var connection = db.connection()) {
       try (var s = connection
           .prepareStatement(
-              "INSERT INTO pull_request (repository, id, title, user, branchName) VALUES (?, ?, ?, ?, ?))")) {
+              "INSERT INTO pull_request (repository, id, title, user, branchName) VALUES (?, ?, ?, ?, ?)")) {
         s.setString(1, pr.repository());
         s.setLong(2, pr.id());
         s.setString(3, pr.title());
