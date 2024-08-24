@@ -82,6 +82,7 @@ public class GitHubSynchronizer {
         var percent = (counter * 100 / allRepos) / 100;
         notify(text, percent);
 
+        repo = GitHubProvider.get().getRepository(repo.getFullName());
         synch(repo);
       }
       notify("Indexing finished", 1);
@@ -97,10 +98,16 @@ public class GitHubSynchronizer {
     return isRunning;
   }
 
-  public void synch(GHRepository repo) throws IOException {
-    var org = GitHubProvider.get().getOrganization(repo.getOwnerName());
-    repo = org.getRepository(repo.getName()); // reload to load all settings
+  public void synch(Repo repository) {
+    try {
+      var repo = GitHubProvider.get().getRepository(repository.name());
+      synch(repo);
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 
+  public void synch(GHRepository repo) throws IOException {
     var name = repo.getFullName();
     var archived = repo.isArchived();
     var privateRepo = repo.isPrivate();
