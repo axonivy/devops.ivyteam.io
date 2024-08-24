@@ -66,11 +66,12 @@ public class BranchRepository {
     try (var connection = db.connection()) {
       try (var s = connection
           .prepareStatement(
-              "INSERT OR REPLACE INTO branch (repository, name, lastCommitAuthor, authoredDate) VALUES (?, ?, ?, ?)")) {
+              "INSERT OR REPLACE INTO branch (repository, name, lastCommitAuthor, protected, authoredDate) VALUES (?, ?, ?, ?, ?)")) {
         s.setString(1, branch.repository());
         s.setString(2, branch.name());
         s.setString(3, branch.lastCommitAuthor());
-        s.setDate(4, new Date(branch.authoredDate().getTime()));
+        s.setInt(4, branch.protectedBranch() ? 1 : 0);
+        s.setDate(5, new Date(branch.authoredDate().getTime()));
         s.execute();
       }
     } catch (SQLException ex) {
@@ -105,8 +106,9 @@ public class BranchRepository {
     var repository = result.getString("repository");
     var name = result.getString("name");
     var lastCommitAuthor = result.getString("lastCommitAuthor");
+    var protectedBranch = result.getInt("protected") == 1;
     var authoredDate = result.getDate("authoredDate");
-    return new Branch(repository, name, lastCommitAuthor, authoredDate);
+    return new Branch(repository, name, lastCommitAuthor, protectedBranch, authoredDate);
   }
 
   public Map<String, Long> countByRepo() {

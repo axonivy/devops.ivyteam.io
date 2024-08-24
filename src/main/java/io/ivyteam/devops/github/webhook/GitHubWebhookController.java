@@ -94,9 +94,10 @@ public class GitHubWebhookController {
       Organization organization) {
 
     Branch toBranch() {
+      // TODO louis can you fix that -> protectedBranch?
       var shortRef = ref.replace("refs/heads/", "");
       var authoredDate = tsToDate(this.head_commit.timestamp);
-      return new Branch(this.repository.full_name, shortRef, this.head_commit.author.username, authoredDate);
+      return new Branch(this.repository.full_name, shortRef, this.head_commit.author.username, false, authoredDate);
     }
   }
 
@@ -109,8 +110,9 @@ public class GitHubWebhookController {
       String updated_at) {
 
     Branch toBranch() {
+      // TODO louis can you fix that -> protectedBranch?
       var authoredDate = tsToDate(this.updated_at);
-      return new Branch(this.repository.full_name, this.ref, this.sender.login, authoredDate);
+      return new Branch(this.repository.full_name, this.ref, this.sender.login, false, authoredDate);
     }
   }
 

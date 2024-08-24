@@ -27,9 +27,14 @@ public class RepoRepository {
             var license = result.getString("license");
             var securityMd = result.getString("securityMd");
             var codeOfConduct = result.getString("codeOfConduct");
-            var settingsLog = result.getString("settingsLog");
+            var deleteBranchOnMerge = result.getInt("deleteBranchOnMerge") == 1;
+            var projects = result.getInt("projects") == 1;
+            var issues = result.getInt("issues") == 1;
+            var wiki = result.getInt("wiki") == 1;
+            var hooks = result.getInt("hooks") == 1;
 
-            var repo = new Repo(name, archived, privateRepo, license, securityMd, codeOfConduct, settingsLog);
+            var repo = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks,
+                license, securityMd, codeOfConduct);
             repos.add(repo);
           }
           return repos;
@@ -48,14 +53,19 @@ public class RepoRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO repository (name, archived, private, license, securityMd, codeOfConduct, settingsLog) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, license, securityMd, codeOfConduct) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
         stmt.setInt(2, repo.archived() ? 1 : 0);
         stmt.setInt(3, repo.privateRepo() ? 1 : 0);
-        stmt.setString(4, repo.license());
-        stmt.setString(5, repo.securityMd());
-        stmt.setString(6, repo.codeOfConduct());
-        stmt.setString(7, repo.settingsLog());
+        stmt.setInt(4, repo.deleteBranchOnMerge() ? 1 : 0);
+        stmt.setInt(5, repo.projects() ? 1 : 0);
+        stmt.setInt(6, repo.issues() ? 1 : 0);
+        stmt.setInt(7, repo.wiki() ? 1 : 0);
+        stmt.setInt(8, repo.hooks() ? 1 : 0);
+        stmt.setString(9, repo.license());
+        stmt.setString(10, repo.securityMd());
+        stmt.setString(11, repo.codeOfConduct());
+
         stmt.execute();
       }
     } catch (SQLException ex) {

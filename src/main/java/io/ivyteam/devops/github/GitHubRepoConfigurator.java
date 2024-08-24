@@ -1,138 +1,74 @@
 package io.ivyteam.devops.github;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.ivyteam.devops.branch.Branch;
+import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.repo.Repo;
+import io.ivyteam.devops.settings.SettingsManager;
 
 public class GitHubRepoConfigurator {
 
-  private final GHRepository repo;
-  private final boolean dry;
-  private final List<String> log = new ArrayList<String>();
+  private final Repo repo;
 
-  public GitHubRepoConfigurator(GHRepository repo, boolean dry) {
+  @Autowired
+  private BranchRepository branches;
+
+  public GitHubRepoConfigurator(Repo repo) {
     this.repo = repo;
-    this.dry = dry;
   }
 
-  public List<String> run() {
+  public void run() {
     try {
-      deleteHeadBranchOnMerge();
-      disableProjects();
-      enableIssues();
-      disableWiki();
-      deleteHooks();
-      protectBranches();
+      GHRepository ghRepo = GitHubProvider.get().getRepository(repo.name());
+      var brs = branches.findByRepo(repo.name());
+      if (!repo.deleteBranchOnMerge()) {
+        ghRepo.deleteBranchOnMerge(true);
+      }
+      if (repo.projects()) {
+        ghRepo.enableProjects(false);
+      }
+      if (!repo.issues()) {
+        ghRepo.enableIssueTracker(true);
+      }
+      if (repo.wiki()) {
+        ghRepo.enableWiki(false);
+      }
+      if (repo.hooks()) {
+        for (var hook : ghRepo.getHooks()) {
+          hook.delete();
+        }
+      }
+      for (var br : brs) {
+        if (needsProtection(br)) {
+          if (!br.protectedBranch()) {
+            var ghBranch = ghRepo.getBranch(br.name());
+            ghBranch.enableProtection()
+                .requiredReviewers(0)
+                .includeAdmins()
+                .enable();
+          }
+        } else {
+          if (br.protectedBranch()) {
+            var ghBranch = ghRepo.getBranch(br.name());
+            ghBranch.disableProtection();
+          }
+        }
+      }
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
-    return log;
   }
 
-  private GitHubRepoConfigurator deleteHeadBranchOnMerge() throws IOException {
-    if (!repo.isDeleteBranchOnMerge()) {
-      log("delete banch on merge");
-      if (!dry) {
-        repo.deleteBranchOnMerge(true);
-      }
-    }
-    return this;
-  }
-
-  private GitHubRepoConfigurator protectBranches() throws IOException {
-    for (var branch : repo.getBranches().values()) {
-      if (!branch.getName().equals("master") && !branch.getName().startsWith("release/")) {
-        continue;
-      }
-
-      if (!isProtected(branch)) {
-        log("protect " + branch.getName() + " branch");
-        if (!dry) {
-          branch.enableProtection()
-              .requiredReviewers(0)
-              .includeAdmins()
-              .enable();
-        }
-      }
-    }
-    return this;
-  }
-
-  private GitHubRepoConfigurator deleteHooks() throws IOException {
-    for (var hook : repo.getHooks()) {
-      log("delete hook " + hook.getUrl());
-      if (!dry) {
-        hook.delete();
-      }
-    }
-    return this;
-  }
-
-  private GitHubRepoConfigurator disableWiki() throws IOException {
-    if (repo.hasWiki()) {
-      log("disable wiki");
-      if (!dry) {
-        repo.enableWiki(false);
-      }
-    }
-    return this;
-  }
-
-  private GitHubRepoConfigurator enableIssues() throws IOException {
-    if (!repo.hasIssues()) {
-      log("enable issues");
-      if (!dry) {
-        repo.enableIssueTracker(true);
-      }
-    }
-    return this;
-  }
-
-  private GitHubRepoConfigurator disableProjects() throws IOException {
-    if (repo.hasProjects()) {
-      log("disable projects");
-      if (!dry) {
-        repo.enableProjects(false);
-      }
-    }
-    return this;
-  }
-
-  private boolean isProtected(GHBranch branch) throws IOException {
-    if (branch.isProtected()) {
-      var protection = branch.getProtection();
-      var reviews = protection.getRequiredReviews();
-      if (reviews == null) {
-        log("protection of branch " + branch.getName() + " allows to merge without PR");
-        if (!dry) {
-          branch.disableProtection();
-        }
+  private boolean needsProtection(Branch branch) {
+    for (var prefix : SettingsManager.INSTANCE.get().branchProtectionPrefixes().split(",")) {
+      if (branch.name().startsWith(prefix)) {
         return false;
       }
-      var reviewers = reviews.getRequiredReviewers();
-      if (reviewers != 0) {
-        log("protection of branch " + branch.getName() + " has not the correct amount of reviewers " + reviewers);
-        if (!dry) {
-          branch.disableProtection();
-        }
-        return false;
-      }
-      if (!protection.getEnforceAdmins().isEnabled()) {
-        log("protection of branch " + branch.getName() + " does not enforce admins");
-        if (!dry) {
-          branch.disableProtection();
-        }
-        return false;
-      }
-      return true;
     }
     return false;
-  }
-
-  private void log(String log) {
-    this.log.add(log);
   }
 }
