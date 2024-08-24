@@ -2,7 +2,6 @@ package io.ivyteam.devops.github;
 
 import java.io.IOException;
 
-import org.kohsuke.github.GHRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.ivyteam.devops.branch.Branch;
@@ -21,25 +20,34 @@ public class GitHubRepoConfigurator {
     this.repo = repo;
   }
 
-  public void run() {
+  public boolean run() {
     try {
-      GHRepository ghRepo = GitHubProvider.get().getRepository(repo.name());
+      var changed = false;
+      var ghRepo = GitHubProvider.get().getRepository(repo.name());
+      if (ghRepo.isPrivate()) {
+        return changed;
+      }
       var brs = branches.findByRepo(repo.name());
       if (!repo.deleteBranchOnMerge()) {
         ghRepo.deleteBranchOnMerge(true);
+        changed = true;
       }
       if (repo.projects()) {
         ghRepo.enableProjects(false);
+        changed = true;
       }
       if (!repo.issues()) {
         ghRepo.enableIssueTracker(true);
+        changed = true;
       }
       if (repo.wiki()) {
         ghRepo.enableWiki(false);
+        changed = true;
       }
       if (repo.hooks()) {
         for (var hook : ghRepo.getHooks()) {
           hook.delete();
+          changed = true;
         }
       }
       for (var br : brs) {
@@ -50,14 +58,17 @@ public class GitHubRepoConfigurator {
                 .requiredReviewers(0)
                 .includeAdmins()
                 .enable();
+            changed = true;
           }
         } else {
           if (br.protectedBranch()) {
             var ghBranch = ghRepo.getBranch(br.name());
             ghBranch.disableProtection();
+            changed = true;
           }
         }
       }
+      return changed;
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }

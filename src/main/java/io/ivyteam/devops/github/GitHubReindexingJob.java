@@ -32,7 +32,10 @@ public class GitHubReindexingJob {
       synchronizer.removeListener(listener);
     }
     for (var repo : repos.all()) {
-      new GitHubRepoConfigurator(repo).run();
+      var changed = new GitHubRepoConfigurator(repo).run();
+      if (changed) {
+        new GitHubSynchronizer().synch(repo);
+      }
     }
   }
 }
