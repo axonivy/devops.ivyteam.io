@@ -98,6 +98,31 @@ public class RepoView extends View implements HasUrlParameter<String> {
     chkPrivate.setReadOnly(true);
     formLayout.add(chkPrivate);
 
+    var chkDeleteBranchOnMerge = new Checkbox("Delete branch on merge");
+    chkDeleteBranchOnMerge.setValue(repo.deleteBranchOnMerge());
+    chkDeleteBranchOnMerge.setReadOnly(true);
+    formLayout.add(chkDeleteBranchOnMerge);
+
+    var chkProjects = new Checkbox("Projects");
+    chkProjects.setValue(repo.projects());
+    chkProjects.setReadOnly(true);
+    formLayout.add(chkProjects);
+
+    var chkIssues = new Checkbox("Issues");
+    chkIssues.setValue(repo.issues());
+    chkIssues.setReadOnly(true);
+    formLayout.add(chkIssues);
+
+    var chkWiki = new Checkbox("Wiki");
+    chkWiki.setValue(repo.wiki());
+    chkWiki.setReadOnly(true);
+    formLayout.add(chkWiki);
+
+    var chkHooks = new Checkbox("Hooks");
+    chkHooks.setValue(repo.hooks());
+    chkHooks.setReadOnly(true);
+    formLayout.add(chkHooks);
+
     var tabSheet = new TabSheet();
 
     var tabLicense = new Tab("LICENSE");
@@ -130,7 +155,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
     txt.setValue(value == null ? "" : value);
     txt.setReadOnly(true);
     txt.getStyle().set("width", "100%");
-    txt.setHeight("800px");
+    txt.setHeight("600px");
     return txt;
   }
 
@@ -144,12 +169,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
   }
 
   private void updateSettings(Repo repo) {
-    try {
-      var ghRepo = GitHubProvider.get().getRepository(repo.name());
-      new GitHubRepoConfigurator(ghRepo, false).run();
-      synch(repo);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    new GitHubRepoConfigurator(repo).run();
+    synch(repo);
   }
 }

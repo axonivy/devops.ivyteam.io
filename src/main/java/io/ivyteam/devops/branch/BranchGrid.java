@@ -27,9 +27,9 @@ import io.ivyteam.devops.user.User;
 
 public class BranchGrid {
 
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
   private static final String PREFIXES_KEY = "filter";
   private static final String SEARCH_KEY = "search";
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
   private final List<Branch> branches;
   private final Class<? extends Component> navigationTarget;
@@ -45,12 +45,13 @@ public class BranchGrid {
   }
 
   public Component create() {
-    var grid = new Grid<>(branches);
+    var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
     grid.addColumn(
         new ComponentRenderer<>(
-            branch -> new Anchor(new User(branch.lastCommitAuthor()).link(), branch.lastCommitAuthor())))
+            branch -> new Anchor(new User(branch.lastCommitAuthor()).link(),
+                branch.lastCommitAuthor())))
         .setHeader("Author")
         .setWidth("10%")
         .setSortable(true)
@@ -64,10 +65,10 @@ public class BranchGrid {
 
     grid
         .addColumn(new ComponentRenderer<>(branch -> new Anchor(branch.ghLink(), branch.name())))
-        .setHeader("Name")
+        .setHeader("Branch")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::name))
-        .setWidth("30%");
+        .setWidth("35%");
 
     grid
         .addColumn(branch -> DATE_FORMAT.format(branch.authoredDate()))
@@ -75,6 +76,17 @@ public class BranchGrid {
         .setWidth("10%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::authoredDate));
+
+    grid
+        .addComponentColumn(branch -> {
+          if (branch.protectedBranch()) {
+            var icon = createIcon(VaadinIcon.LOCK);
+            icon.setTooltipText("Protected");
+            return icon;
+          }
+          return null;
+        })
+        .setWidth("5%");
 
     var layout = new VerticalLayout();
     layout.setHeightFull();
@@ -124,13 +136,21 @@ public class BranchGrid {
     return inputLayout;
   }
 
+  private Icon createIcon(VaadinIcon vaadinIcon) {
+    var icon = vaadinIcon.create();
+    icon.getStyle().set("padding", "var(--lumo-space-xs");
+    return icon;
+  }
+
   private void updateQueryParams() {
     var baseUrl = RouteConfiguration.forSessionScope().getUrl(navigationTarget, routeParameters);
     var params = new HashMap<String, String>();
     if (!searchValue.isEmpty()) {
       params.put(SEARCH_KEY, searchValue);
     }
-    params.put(PREFIXES_KEY, excludedPrefixes);
+    if (!excludedPrefixes.isEmpty()) {
+      params.put(PREFIXES_KEY, excludedPrefixes);
+    }
     var queryParams = params.isEmpty() ? QueryParameters.empty() : QueryParameters.simple(params);
     var updatedLocation = new Location(baseUrl, queryParams);
     UI.getCurrent().getPage().getHistory().replaceState(null, updatedLocation);

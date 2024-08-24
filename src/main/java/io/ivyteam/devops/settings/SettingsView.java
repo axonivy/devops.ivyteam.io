@@ -27,6 +27,7 @@ public class SettingsView extends View {
   private final TextField githubOrganization;
   private final PasswordField githubToken;
   private final TextField excludedBranchPrefixes;
+  private final TextField branchProtectionPrefixes;
 
   private static Thread synchronizer;
 
@@ -55,15 +56,21 @@ public class SettingsView extends View {
     githubOrganization = new TextField("GitHub Organization");
     githubOrganization.setValue(settings.gitHubOrg());
     githubOrganization.addValueChangeListener(event -> saveSettings());
+
     githubToken = new PasswordField("GitHub Token");
     githubToken.setValue(settings.gitHubToken());
     githubToken.addValueChangeListener(event -> saveSettings());
+
     excludedBranchPrefixes = new TextField("Excluded branch prefixes");
     excludedBranchPrefixes.setValue(settings.excludedBranchPrefixes());
     excludedBranchPrefixes.addValueChangeListener(event -> saveSettings());
 
+    branchProtectionPrefixes = new TextField("Branch protection prefixes");
+    branchProtectionPrefixes.setValue(settings.branchProtectionPrefixes());
+    branchProtectionPrefixes.addValueChangeListener(event -> saveSettings());
+
     var formLayout = new FormLayout();
-    formLayout.add(githubOrganization, githubToken, excludedBranchPrefixes);
+    formLayout.add(githubOrganization, githubToken, excludedBranchPrefixes, branchProtectionPrefixes);
     formLayout.setResponsiveSteps(new ResponsiveStep("0", 1));
     div.setMaxWidth("50%");
     div.add(formLayout);
@@ -82,6 +89,7 @@ public class SettingsView extends View {
     settings.gitHubOrg(githubOrganization.getValue());
     settings.gitHubToken(githubToken.getValue());
     settings.excludedBranchPrefixes(excludedBranchPrefixes.getValue());
+    settings.branchProtectionPrefixes(branchProtectionPrefixes.getValue());
     SettingsManager.INSTANCE.save(settings);
   }
 

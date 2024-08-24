@@ -34,7 +34,7 @@ public class ReposView extends View {
 
     grid.addColumn(new ComponentRenderer<>(p -> new Anchor(p.link(), p.name())))
         .setHeader("Name")
-        .setWidth("40%")
+        .setWidth("60%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
@@ -81,23 +81,6 @@ public class ReposView extends View {
         .setHeader("License")
         .setWidth("10%")
         .setSortable(true);
-
-    grid.addComponentColumn(repo -> {
-      if (repo.archived()) {
-        return null;
-      }
-
-      if (repo.settingsLog().isEmpty()) {
-        var confirmed = createIcon(VaadinIcon.CHECK);
-        confirmed.getElement().getThemeList().add("badge success");
-        return confirmed;
-      }
-      var confirmed = createIcon(VaadinIcon.CLOSE);
-      confirmed.getElement().getThemeList().add("badge error");
-      return confirmed;
-    })
-        .setHeader("Settings")
-        .setWidth("10%");
 
     grid
         .addComponentColumn(repo -> {

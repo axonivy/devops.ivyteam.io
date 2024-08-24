@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHFileNotFoundException;
@@ -102,8 +101,6 @@ public class GitHubSynchronizer {
     var org = GitHubProvider.get().getOrganization(repo.getOwnerName());
     repo = org.getRepository(repo.getName()); // reload to load all settings
 
-    var settingsLog = new GitHubRepoConfigurator(repo, true).run().stream().collect(Collectors.joining("\n"));
-
     var name = repo.getFullName();
     var archived = repo.isArchived();
     var privateRepo = repo.isPrivate();
@@ -112,9 +109,16 @@ public class GitHubSynchronizer {
     var codeOfConduct = license(repo, "CODE_OF_CONDUCT.md");
     var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
 
+    boolean deleteBranchOnMerge = repo.isDeleteBranchOnMerge();
+    boolean projects = repo.hasProjects();
+    boolean issues = repo.hasIssues();
+    boolean wiki = repo.hasWiki();
+    boolean hooks = !repo.getHooks().isEmpty();
+
     var ghRepo = repo;
 
-    var rr = new Repo(name, archived, privateRepo, licence, securityMd, codeOfConduct, settingsLog);
+    var rr = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, licence,
+        securityMd, codeOfConduct);
     repos.create(rr);
 
     gitHubPrs.stream()
@@ -156,7 +160,8 @@ public class GitHubSynchronizer {
       if (author != null) {
         lastCommitAuthor = author.getLogin();
       }
-      return new Branch(repo.getFullName(), branch.getName(), lastCommitAuthor, lastCommit.getAuthoredDate());
+      return new Branch(repo.getFullName(), branch.getName(), lastCommitAuthor, branch.isProtected(),
+          lastCommit.getAuthoredDate());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

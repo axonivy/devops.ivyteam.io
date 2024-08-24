@@ -7,10 +7,14 @@ CREATE TABLE repository (
     name VARCHAR(200) PRIMARY KEY NOT NULL,
     archived INTEGER NOT NULL,
     private INTEGER NOT NULL,
+    deleteBranchOnMerge INTEGER NOT NULL,
+    projects INTEGER NOT NULL,
+    issues INTEGER NOT NULL,
+    wiki INTEGER NOT NULL,
+    hooks INTEGER NOT NULL,
     license TEXT NULL,
     securityMd TEXT NULL,
-    codeOfConduct TEXT NULL,
-    settingsLog TEXT NULL
+    codeOfConduct TEXT NULL
 );
 
 CREATE TABLE pull_request (
@@ -28,6 +32,7 @@ CREATE TABLE branch (
     repository VARCHAR(200) NOT NULL,
     name VARCHAR(200) NOT NULL,
     lastCommitAuthor VARCHAR(200) NOT NULL,
+    protected INTEGER NOT NULL,
     authoredDate DATE NOT NULL,
     PRIMARY KEY (repository, name),
     FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,

@@ -6,6 +6,7 @@ public record Branch(
     String repository,
     String name,
     String lastCommitAuthor,
+    boolean protectedBranch,
     Date authoredDate) {
 
   public String repoLink() {
