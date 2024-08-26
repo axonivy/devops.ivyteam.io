@@ -100,7 +100,11 @@ public class GitHubWebhookController {
       if (this.head_commit != null && this.head_commit.timestamp != null) {
         authoredDate = tsToDate(this.head_commit.timestamp);
       }
-      return new Branch(this.repository.full_name, shortRef, this.head_commit.author.username, false, authoredDate);
+      var authorUserName = "?";
+      if (this.head_commit != null && this.head_commit.author != null && this.head_commit.author.username != null) {
+        authorUserName = this.head_commit.author.username;
+      }
+      return new Branch(this.repository.full_name, shortRef, authorUserName, false, authoredDate);
     }
   }
 
