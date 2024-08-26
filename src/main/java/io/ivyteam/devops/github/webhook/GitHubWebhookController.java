@@ -64,7 +64,7 @@ public class GitHubWebhookController {
       prs.delete(pr);
       return ResponseEntity.ok().body(pr);
     }
-    throw new RuntimeException("PR action not supported:" + bean.action);
+    return ResponseEntity.noContent().build();
   }
 
   private void validateBean(Object bean) {
@@ -96,7 +96,10 @@ public class GitHubWebhookController {
     Branch toBranch() {
       // TODO louis can you fix that -> protectedBranch?
       var shortRef = ref.replace("refs/heads/", "");
-      var authoredDate = tsToDate(this.head_commit.timestamp);
+      var authoredDate = new Date();
+      if (this.head_commit != null && this.head_commit.timestamp != null) {
+        authoredDate = tsToDate(this.head_commit.timestamp);
+      }
       return new Branch(this.repository.full_name, shortRef, this.head_commit.author.username, false, authoredDate);
     }
   }
@@ -111,7 +114,10 @@ public class GitHubWebhookController {
 
     Branch toBranch() {
       // TODO louis can you fix that -> protectedBranch?
-      var authoredDate = tsToDate(this.updated_at);
+      var authoredDate = new Date();
+      if (this.updated_at != null) {
+        authoredDate = tsToDate(this.updated_at);
+      }
       return new Branch(this.repository.full_name, this.ref, this.sender.login, false, authoredDate);
     }
   }
