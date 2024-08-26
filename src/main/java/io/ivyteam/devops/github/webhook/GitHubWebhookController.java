@@ -36,6 +36,9 @@ public class GitHubWebhookController {
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=push")
   public ResponseEntity<Branch> push(@RequestBody PushBean bean) {
     validateBean(bean);
+    if (bean.deleted) {
+      return ResponseEntity.noContent().build();
+    }
     var branch = bean.toBranch();
     branches.create(branch);
     return ResponseEntity.ok().body(branch);
@@ -91,19 +94,16 @@ public class GitHubWebhookController {
       String ref,
       Repository repository,
       Commit head_commit,
-      Organization organization) {
+      Organization organization,
+      boolean deleted) {
 
     Branch toBranch() {
-      // TODO louis can you fix that -> protectedBranch?
+      // TODO louis can you fix that -> protectedBranch? not available, need to use
+      // rest api I think.
       var shortRef = ref.replace("refs/heads/", "");
       var authoredDate = new Date();
-      if (this.head_commit != null && this.head_commit.timestamp != null) {
-        authoredDate = tsToDate(this.head_commit.timestamp);
-      }
-      var authorUserName = "?";
-      if (this.head_commit != null && this.head_commit.author != null && this.head_commit.author.username != null) {
-        authorUserName = this.head_commit.author.username;
-      }
+      authoredDate = tsToDate(this.head_commit.timestamp);
+      var authorUserName = this.head_commit.author.username;
       return new Branch(this.repository.full_name, shortRef, authorUserName, false, authoredDate);
     }
   }
@@ -117,7 +117,6 @@ public class GitHubWebhookController {
       String updated_at) {
 
     Branch toBranch() {
-      // TODO louis can you fix that -> protectedBranch?
       var authoredDate = new Date();
       if (this.updated_at != null) {
         authoredDate = tsToDate(this.updated_at);
