@@ -19,6 +19,7 @@ public class Database {
   public Connection connection() {
     if (!exists()) {
       create();
+      //tst
     }
     return dbConnection();
   }
