@@ -53,8 +53,8 @@ public class GitHubWebhookController {
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=pull_request")
-  public ResponseEntity<PullRequest> createPR(@RequestBody PullRequestBean bean) {
-    validateBean(bean.organization);
+  public ResponseEntity<PullRequest> pr(@RequestBody PullRequestBean bean) {
+    validateBean(bean);
     var pr = bean.toPullRequest();
     if ("opened".equals(bean.action)) {
       prs.create(pr);
