@@ -169,7 +169,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
   }
 
   private void updateSettings(Repo repo) {
-    new GitHubRepoConfigurator(repo).run();
+    new GitHubRepoConfigurator(branches, repo).run();
     synch(repo);
   }
 }
