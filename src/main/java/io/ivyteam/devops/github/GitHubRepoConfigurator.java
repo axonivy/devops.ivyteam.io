@@ -2,8 +2,6 @@ package io.ivyteam.devops.github;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.repo.Repo;
@@ -11,12 +9,11 @@ import io.ivyteam.devops.settings.SettingsManager;
 
 public class GitHubRepoConfigurator {
 
+  private final BranchRepository branches;
   private final Repo repo;
 
-  @Autowired
-  private BranchRepository branches;
-
-  public GitHubRepoConfigurator(Repo repo) {
+  public GitHubRepoConfigurator(BranchRepository branches, Repo repo) {
+    this.branches = branches;
     this.repo = repo;
   }
 
