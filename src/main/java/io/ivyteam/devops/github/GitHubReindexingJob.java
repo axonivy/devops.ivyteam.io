@@ -38,13 +38,13 @@ public class GitHubReindexingJob {
     for (var repo : repos.all()) {
       var changed = new GitHubRepoConfigurator(branches, repo).run();
       if (changed) {
-        new GitHubSynchronizer().synch(repo);
+        synchronizer.synch(repo);
       }
     }
   }
 
   private void log(Progress progress) {
     var percent = ((int) (progress.percent() * 100));
-    LOGGER.info(percent * 100 + "%: " + progress.message());
+    LOGGER.info(percent + "%: " + progress.message());
   }
 }
