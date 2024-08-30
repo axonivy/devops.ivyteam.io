@@ -44,7 +44,7 @@ public class UserView extends View implements HasUrlParameter<String> {
     var tabBranches = new Tab(branchCounter);
 
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, user);
-    var gridBranches = new BranchGrid(allBranches, UserView.class, routeParameters).create();
+    var gridBranches = new BranchGrid(allBranches, pullRequests, UserView.class, routeParameters).create();
     tabSheet.add(tabBranches, gridBranches);
 
     setContent(tabSheet);

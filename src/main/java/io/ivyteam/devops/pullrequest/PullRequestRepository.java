@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -39,6 +40,23 @@ public class PullRequestRepository {
       try (var stmt = connection.prepareStatement("SELECT * FROM pull_request WHERE user = ? ORDER BY title")) {
         stmt.setString(1, userName);
         return query(stmt);
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public Optional<PullRequest> findByBranchName(String branchName) {
+    try (var connection = db.connection()) {
+      try (var stmt = connection.prepareStatement("SELECT * FROM pull_request WHERE branchName = ?")) {
+        stmt.setString(1, branchName);
+        try (var result = stmt.executeQuery()) {
+          if (result.next()) {
+            var pr = toPr(result);
+            return Optional.of(pr);
+          }
+          return Optional.empty();
+        }
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
