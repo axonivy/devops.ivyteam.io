@@ -18,10 +18,10 @@ public class UserSession implements Serializable {
   public AuthenticatedUser user() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var principal = (OAuth2AuthenticatedPrincipal) authentication.getPrincipal();
-    var username = principal.getAttribute("login").toString();
-    var email = principal.getAttribute("email").toString();
-    var avatarUrl = principal.getAttribute("avatar_url").toString();
-    var profileUrl = principal.getAttribute("html_url").toString();
+    var username = toString(principal.getAttribute("login"));
+    var email = toString(principal.getAttribute("email"));
+    var avatarUrl = toString(principal.getAttribute("avatar_url"));
+    var profileUrl = toString(principal.getAttribute("html_url"));
     return new AuthenticatedUser(username, email, avatarUrl, profileUrl);
   }
 
@@ -30,5 +30,12 @@ public class UserSession implements Serializable {
     var logoutHandler = new SecurityContextLogoutHandler();
     var request = VaadinServletRequest.getCurrent().getHttpServletRequest();
     logoutHandler.logout(request, null, null);
+  }
+
+  private String toString(Object value) {
+    if (value == null) {
+      return "";
+    }
+    return value.toString();
   }
 }
