@@ -26,6 +26,8 @@ public class SettingsView extends View {
 
   private final TextField githubOrganization;
   private final PasswordField githubToken;
+  private final PasswordField githubClientId;
+  private final PasswordField githubClientSecret;
   private final TextField excludedBranchPrefixes;
   private final TextField branchProtectionPrefixes;
 
@@ -61,6 +63,14 @@ public class SettingsView extends View {
     githubToken.setValue(settings.gitHubToken());
     githubToken.addValueChangeListener(event -> saveSettings());
 
+    githubClientId = new PasswordField("GitHub Client ID");
+    githubClientId.setValue(settings.gitHubClientId());
+    githubClientId.addValueChangeListener(event -> saveSettings());
+
+    githubClientSecret = new PasswordField("GitHub Client Secret");
+    githubClientSecret.setValue(settings.gitHubClientSecret());
+    githubClientSecret.addValueChangeListener(event -> saveSettings());
+
     excludedBranchPrefixes = new TextField("Excluded branch prefixes");
     excludedBranchPrefixes.setValue(settings.excludedBranchPrefixes());
     excludedBranchPrefixes.addValueChangeListener(event -> saveSettings());
@@ -70,7 +80,8 @@ public class SettingsView extends View {
     branchProtectionPrefixes.addValueChangeListener(event -> saveSettings());
 
     var formLayout = new FormLayout();
-    formLayout.add(githubOrganization, githubToken, excludedBranchPrefixes, branchProtectionPrefixes);
+    formLayout.add(githubOrganization, githubToken, githubClientId, githubClientSecret, excludedBranchPrefixes,
+        branchProtectionPrefixes);
     formLayout.setResponsiveSteps(new ResponsiveStep("0", 1));
     div.setMaxWidth("50%");
     div.add(formLayout);
@@ -88,6 +99,8 @@ public class SettingsView extends View {
   private void saveSettings() {
     settings.gitHubOrg(githubOrganization.getValue());
     settings.gitHubToken(githubToken.getValue());
+    settings.gitHubClientId(githubClientId.getValue());
+    settings.gitHubClientSecret(githubClientSecret.getValue());
     settings.excludedBranchPrefixes(excludedBranchPrefixes.getValue());
     settings.branchProtectionPrefixes(branchProtectionPrefixes.getValue());
     SettingsManager.INSTANCE.save(settings);
