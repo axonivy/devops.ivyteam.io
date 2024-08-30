@@ -34,6 +34,9 @@ import io.ivyteam.devops.view.View;
 public class RepoView extends View implements HasUrlParameter<String> {
 
   @Autowired
+  private GitHubProvider gitHub;
+
+  @Autowired
   private RepoRepository repos;
 
   @Autowired
@@ -161,7 +164,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
   private void synch(Repo repo) {
     try {
-      var ghRepo = GitHubProvider.get().getRepository(repo.name());
+      var ghRepo = gitHub.get().getRepository(repo.name());
       synchronizer.synch(ghRepo);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -169,7 +172,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
   }
 
   private void updateSettings(Repo repo) {
-    new GitHubRepoConfigurator(branches, repo).run();
+    new GitHubRepoConfigurator(gitHub, branches, repo).run();
     synch(repo);
   }
 }

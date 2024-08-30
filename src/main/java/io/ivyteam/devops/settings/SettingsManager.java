@@ -31,7 +31,6 @@ public class SettingsManager {
       throw new RuntimeException(ex);
     }
 
-    settings.gitHubOrg(properties.getProperty(Settings.GITHUB_ORG, ""));
     settings.gitHubClientId(properties.getProperty(Settings.GITHUB_CLIENT_ID, ""));
     settings.gitHubClientSecret(properties.getProperty(Settings.GITHUB_CLIENT_SECRET, ""));
     settings.gitHubAppId(properties.getProperty(Settings.GITHUB_APP_ID, ""));
@@ -45,7 +44,6 @@ public class SettingsManager {
 
   public void save(Settings settings) {
     var properties = new java.util.Properties();
-    properties.setProperty(Settings.GITHUB_ORG, settings.gitHubOrg());
     properties.setProperty(Settings.GITHUB_CLIENT_ID, settings.gitHubClientId());
     properties.setProperty(Settings.GITHUB_CLIENT_SECRET, settings.gitHubClientSecret());
     properties.setProperty(Settings.GITHUB_APP_ID, settings.gitHubAppId());

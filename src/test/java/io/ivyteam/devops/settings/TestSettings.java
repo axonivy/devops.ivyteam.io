@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 class TestSettings {
 
   @Test
-  void gitHubOrg() {
+  void gitHubAppId() {
     var settings = new Settings();
-    settings.gitHubOrg("abc");
-    assertThat(settings.gitHubOrg()).isEqualTo("abc");
+    settings.gitHubAppId("abc");
+    assertThat(settings.gitHubAppId()).isEqualTo("abc");
   }
 }

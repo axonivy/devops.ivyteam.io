@@ -26,6 +26,9 @@ public class GitHubReindexingJob {
   @Autowired
   private BranchRepository branches;
 
+  @Autowired
+  private GitHubProvider gitHub;
+
   @Scheduled(cron = "0 11 0 * * ?")
   public void reindex() {
     Consumer<Progress> listener = this::log;
@@ -36,7 +39,7 @@ public class GitHubReindexingJob {
       synchronizer.removeListener(listener);
     }
     for (var repo : repos.all()) {
-      var changed = new GitHubRepoConfigurator(branches, repo).run();
+      var changed = new GitHubRepoConfigurator(gitHub, branches, repo).run();
       if (changed) {
         synchronizer.synch(repo);
       }

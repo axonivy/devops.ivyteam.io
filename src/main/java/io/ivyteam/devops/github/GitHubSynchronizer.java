@@ -21,10 +21,12 @@ import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
-import io.ivyteam.devops.settings.SettingsManager;
 
 @Service
 public class GitHubSynchronizer {
+
+  @Autowired
+  GitHubProvider gitHub;
 
   @Autowired
   private RepoRepository repos;
@@ -69,7 +71,7 @@ public class GitHubSynchronizer {
   public synchronized void run() {
     isRunning = true;
     try {
-      var org = SettingsManager.INSTANCE.get().gitHubOrg();
+      var org = gitHub.org();
 
       notify("Loading repositories from GitHub Organization " + org, 0);
       var repos = reposFor(org);
@@ -82,7 +84,7 @@ public class GitHubSynchronizer {
         var percent = (counter * 100 / allRepos) / 100;
         notify(text, percent);
 
-        repo = GitHubProvider.get().getRepository(repo.getFullName());
+        repo = gitHub.get().getRepository(repo.getFullName());
         synch(repo);
       }
       notify("Indexing finished", 1);
@@ -100,7 +102,7 @@ public class GitHubSynchronizer {
 
   public void synch(Repo repository) {
     try {
-      var repo = GitHubProvider.get().getRepository(repository.name());
+      var repo = gitHub.get().getRepository(repository.name());
       synch(repo);
     } catch (IOException ex) {
       throw new RuntimeException(ex);
@@ -174,9 +176,9 @@ public class GitHubSynchronizer {
     }
   }
 
-  private static List<GHRepository> reposFor(String orgName) {
+  private List<GHRepository> reposFor(String orgName) {
     try {
-      var org = GitHubProvider.get().getOrganization(orgName);
+      var org = gitHub.get().getOrganization(orgName);
       return List.copyOf(org.getRepositories().values()).stream()
           // .limit(10)
           .toList();
