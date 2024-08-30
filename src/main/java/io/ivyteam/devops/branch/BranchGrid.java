@@ -48,7 +48,8 @@ public class BranchGrid {
   }
 
   public Component create() {
-    var prs = prRepo.all().stream().collect(Collectors.toMap(key -> key.branchName(), value -> value));
+    var prs = prRepo.all().stream()
+        .collect(Collectors.toMap(key -> key.repository() + key.branchName(), value -> value));
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
@@ -72,7 +73,7 @@ public class BranchGrid {
 
     grid
         .addComponentColumn(branch -> {
-          var pr = prs.get(branch.name());
+          var pr = prs.get(branch.repository() + branch.name());
           if (pr == null) {
             return null;
           }
