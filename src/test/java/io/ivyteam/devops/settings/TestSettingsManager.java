@@ -15,7 +15,6 @@ class TestSettingsManager {
     var manager = new SettingsManager(tempDir.resolve("abc.properties"));
     var settings = manager.get();
     assertThat(settings.gitHubOrg()).isEmpty();
-    assertThat(settings.gitHubToken()).isEmpty();
   }
 
   @Test
@@ -23,11 +22,9 @@ class TestSettingsManager {
     var manager = new SettingsManager(tempDir.resolve("abc.properties"));
     var settings = manager.get();
     settings.gitHubOrg("myorg");
-    settings.gitHubToken("myToken");
     manager.save(settings);
 
     settings = manager.get();
     assertThat(settings.gitHubOrg()).isEqualTo("myorg");
-    assertThat(settings.gitHubToken()).isEqualTo("myToken");
   }
 }

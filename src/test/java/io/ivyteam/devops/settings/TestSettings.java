@@ -12,11 +12,4 @@ class TestSettings {
     settings.gitHubOrg("abc");
     assertThat(settings.gitHubOrg()).isEqualTo("abc");
   }
-
-  @Test
-  void gitHubToken() {
-    var settings = new Settings();
-    settings.gitHubToken("tok");
-    assertThat(settings.gitHubToken()).isEqualTo("tok");
-  }
 }

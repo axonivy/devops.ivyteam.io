@@ -32,9 +32,10 @@ public class SettingsManager {
     }
 
     settings.gitHubOrg(properties.getProperty(Settings.GITHUB_ORG, ""));
-    settings.gitHubToken(properties.getProperty(Settings.GITHUB_TOKEN, ""));
     settings.gitHubClientId(properties.getProperty(Settings.GITHUB_CLIENT_ID, ""));
     settings.gitHubClientSecret(properties.getProperty(Settings.GITHUB_CLIENT_SECRET, ""));
+    settings.gitHubAppId(properties.getProperty(Settings.GITHUB_APP_ID, ""));
+    settings.gitHubAppInstallationId(properties.getProperty(Settings.GITHUB_APP_INSTALLATION_ID, ""));
     settings.excludedBranchPrefixes(properties.getProperty(Settings.EXCLUDED_BRANCH_PREFIXES,
         "master,release/,stale/,dependabot/,gh-pages,dev/"));
     settings.branchProtectionPrefixes(properties.getProperty(Settings.BRANCH_PROTECTION_PREFIXES,
@@ -45,9 +46,10 @@ public class SettingsManager {
   public void save(Settings settings) {
     var properties = new java.util.Properties();
     properties.setProperty(Settings.GITHUB_ORG, settings.gitHubOrg());
-    properties.setProperty(Settings.GITHUB_TOKEN, settings.gitHubToken());
     properties.setProperty(Settings.GITHUB_CLIENT_ID, settings.gitHubClientId());
     properties.setProperty(Settings.GITHUB_CLIENT_SECRET, settings.gitHubClientSecret());
+    properties.setProperty(Settings.GITHUB_APP_ID, settings.gitHubAppId());
+    properties.setProperty(Settings.GITHUB_APP_INSTALLATION_ID, settings.gitHubAppInstallationId());
     properties.setProperty(Settings.EXCLUDED_BRANCH_PREFIXES, settings.excludedBranchPrefixes());
     properties.setProperty(Settings.BRANCH_PROTECTION_PREFIXES, settings.branchProtectionPrefixes());
     try (var out = Files.newOutputStream(path, java.nio.file.StandardOpenOption.CREATE)) {
