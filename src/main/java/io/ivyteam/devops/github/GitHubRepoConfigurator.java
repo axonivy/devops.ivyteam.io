@@ -21,7 +21,7 @@ public class GitHubRepoConfigurator {
     try {
       var changed = false;
       var ghRepo = GitHubProvider.get().getRepository(repo.name());
-      if (ghRepo.isPrivate()) {
+      if (ghRepo.isPrivate() || ghRepo.isArchived()) {
         return changed;
       }
       var brs = branches.findByRepo(repo.name());
@@ -67,7 +67,7 @@ public class GitHubRepoConfigurator {
       }
       return changed;
     } catch (IOException ex) {
-      throw new RuntimeException(ex);
+      throw new RuntimeException("Could not update repository " + repo.name(), ex);
     }
   }
 
