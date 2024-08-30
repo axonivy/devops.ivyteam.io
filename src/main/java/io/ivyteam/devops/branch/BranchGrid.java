@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -47,6 +48,7 @@ public class BranchGrid {
   }
 
   public Component create() {
+    var prs = prRepo.all().stream().collect(Collectors.toMap(key -> key.branchName(), value -> value));
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
@@ -70,8 +72,11 @@ public class BranchGrid {
 
     grid
         .addComponentColumn(branch -> {
-          return prRepo.findByBranchName(branch.name())
-              .map(p -> new Anchor(p.ghLink(), "#" + Long.toString(p.id()))).orElseGet(() -> new Anchor());
+          var pr = prs.get(branch.name());
+          if (pr == null) {
+            return null;
+          }
+          return new Anchor(pr.ghLink(), "#" + pr.id());
         })
         .setHeader("PR")
         .setWidth("5%");
