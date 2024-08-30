@@ -25,9 +25,10 @@ public class SettingsView extends View {
   private final ProgressBar progressBar;
 
   private final TextField githubOrganization;
-  private final PasswordField githubToken;
   private final PasswordField githubClientId;
   private final PasswordField githubClientSecret;
+  private final TextField gitHubAppId;
+  private final TextField gitHubAppInstallationId;
   private final TextField excludedBranchPrefixes;
   private final TextField branchProtectionPrefixes;
 
@@ -59,10 +60,6 @@ public class SettingsView extends View {
     githubOrganization.setValue(settings.gitHubOrg());
     githubOrganization.addValueChangeListener(event -> saveSettings());
 
-    githubToken = new PasswordField("GitHub Token");
-    githubToken.setValue(settings.gitHubToken());
-    githubToken.addValueChangeListener(event -> saveSettings());
-
     githubClientId = new PasswordField("GitHub Client ID");
     githubClientId.setValue(settings.gitHubClientId());
     githubClientId.addValueChangeListener(event -> saveSettings());
@@ -70,6 +67,14 @@ public class SettingsView extends View {
     githubClientSecret = new PasswordField("GitHub Client Secret");
     githubClientSecret.setValue(settings.gitHubClientSecret());
     githubClientSecret.addValueChangeListener(event -> saveSettings());
+
+    gitHubAppId = new TextField("GitHub Application ID");
+    gitHubAppId.setValue(settings.gitHubAppId());
+    gitHubAppId.addValueChangeListener(event -> saveSettings());
+
+    gitHubAppInstallationId = new TextField("GitHub Application Installation ID");
+    gitHubAppInstallationId.setValue(settings.gitHubAppInstallationId());
+    gitHubAppInstallationId.addValueChangeListener(event -> saveSettings());
 
     excludedBranchPrefixes = new TextField("Excluded branch prefixes");
     excludedBranchPrefixes.setValue(settings.excludedBranchPrefixes());
@@ -80,7 +85,8 @@ public class SettingsView extends View {
     branchProtectionPrefixes.addValueChangeListener(event -> saveSettings());
 
     var formLayout = new FormLayout();
-    formLayout.add(githubOrganization, githubToken, githubClientId, githubClientSecret, excludedBranchPrefixes,
+    formLayout.add(githubOrganization, githubClientId, githubClientSecret, gitHubAppId, gitHubAppInstallationId,
+        excludedBranchPrefixes,
         branchProtectionPrefixes);
     formLayout.setResponsiveSteps(new ResponsiveStep("0", 1));
     div.setMaxWidth("50%");
@@ -98,9 +104,10 @@ public class SettingsView extends View {
 
   private void saveSettings() {
     settings.gitHubOrg(githubOrganization.getValue());
-    settings.gitHubToken(githubToken.getValue());
     settings.gitHubClientId(githubClientId.getValue());
     settings.gitHubClientSecret(githubClientSecret.getValue());
+    settings.gitHubAppId(gitHubAppId.getValue());
+    settings.gitHubAppInstallationId(gitHubAppInstallationId.getValue());
     settings.excludedBranchPrefixes(excludedBranchPrefixes.getValue());
     settings.branchProtectionPrefixes(branchProtectionPrefixes.getValue());
     SettingsManager.INSTANCE.save(settings);
