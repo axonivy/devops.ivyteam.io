@@ -34,7 +34,6 @@ public class Application implements AppShellConfigurator {
     new SpringApplicationBuilder(Application.class)
         .initializers(new MyContextInitializer())
         .run(args);
-    // SpringApplication.run(Application.class, args);
   }
 
   @Override
@@ -48,13 +47,11 @@ public class Application implements AppShellConfigurator {
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
       var environment = configurableApplicationContext.getEnvironment();
-      var myProperties = new HashMap<String, Object>();
+      var props = new HashMap<String, Object>();
       var settings = SettingsManager.INSTANCE.get();
-      myProperties.put("spring.security.oauth2.client.registration.github.client-id", settings.gitHubClientId());
-      myProperties.put("spring.security.oauth2.client.registration.github.client-secret",
-          settings.gitHubClientSecret());
-      environment.getPropertySources().addFirst(
-          new MapPropertySource("my-props", myProperties));
+      props.put("spring.security.oauth2.client.registration.github.client-id", settings.gitHubClientId());
+      props.put("spring.security.oauth2.client.registration.github.client-secret", settings.gitHubClientSecret());
+      environment.getPropertySources().addFirst(new MapPropertySource("devops-props", props));
     }
   }
 }
