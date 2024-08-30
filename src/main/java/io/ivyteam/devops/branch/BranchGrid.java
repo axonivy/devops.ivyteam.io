@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -15,13 +16,13 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
 
+import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.settings.SettingsManager;
 import io.ivyteam.devops.user.User;
 
@@ -36,39 +37,49 @@ public class BranchGrid {
   private final RouteParameters routeParameters;
   private String searchValue = "";
   private String excludedPrefixes = "";
+  private PullRequestRepository prRepo;
 
-  public BranchGrid(List<Branch> branches, Class<? extends Component> navigationTarget,
+  public BranchGrid(List<Branch> branches, PullRequestRepository prRepo, Class<? extends Component> navigationTarget,
       RouteParameters routeParameters) {
     this.branches = branches;
+    this.prRepo = prRepo;
     this.navigationTarget = navigationTarget;
     this.routeParameters = routeParameters;
   }
 
   public Component create() {
+    var prs = prRepo.all().stream().collect(Collectors.toMap(key -> key.branchName(), value -> value));
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
-    grid.addColumn(
-        new ComponentRenderer<>(
-            branch -> new Anchor(new User(branch.lastCommitAuthor()).link(),
-                branch.lastCommitAuthor())))
+    grid.addComponentColumn(branch -> new Anchor(new User(branch.lastCommitAuthor()).link(), branch.lastCommitAuthor()))
         .setHeader("Author")
         .setWidth("10%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::lastCommitAuthor));
 
-    grid.addColumn(new ComponentRenderer<>(branch -> new Anchor(branch.repoLink(), branch.repository())))
+    grid.addComponentColumn(branch -> new Anchor(branch.repoLink(), branch.repository()))
         .setHeader("Repository")
         .setWidth("20%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::repository));
 
-    grid
-        .addColumn(new ComponentRenderer<>(branch -> new Anchor(branch.ghLink(), branch.name())))
+    grid.addComponentColumn(branch -> new Anchor(branch.ghLink(), branch.name()))
         .setHeader("Branch")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::name))
-        .setWidth("35%");
+        .setWidth("30%");
+
+    grid
+        .addComponentColumn(branch -> {
+          var pr = prs.get(branch.name());
+          if (pr == null) {
+            return null;
+          }
+          return new Anchor(pr.ghLink(), "#" + pr.id());
+        })
+        .setHeader("PR")
+        .setWidth("5%");
 
     grid
         .addColumn(branch -> DATE_FORMAT.format(branch.authoredDate()))

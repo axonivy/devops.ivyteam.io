@@ -12,7 +12,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializablePredicate;
 
@@ -31,21 +30,21 @@ public class PullRequestGrid {
         .setSortable(true);
 
     grid
-        .addColumn(new ComponentRenderer<>(pr -> new Anchor(pr.ghLink(), pr.title())))
+        .addComponentColumn(pr -> new Anchor(pr.ghLink(), pr.title()))
         .setHeader("Title")
         .setWidth("40%")
         .setSortable(true)
         .setComparator(Comparator.comparing(PullRequest::title));
 
     grid
-        .addColumn(new ComponentRenderer<>(p -> new Anchor(p.repoLink(), p.repository())))
+        .addComponentColumn(p -> new Anchor(p.repoLink(), p.repository()))
         .setHeader("Repo")
         .setWidth("30%")
         .setSortable(true)
         .setComparator(Comparator.comparing(pr -> pr.repository()));
 
     grid
-        .addColumn(new ComponentRenderer<>(pr -> new Anchor(new User(pr.user()).link(), pr.user())))
+        .addComponentColumn(pr -> new Anchor(new User(pr.user()).link(), pr.user()))
         .setHeader("User")
         .setWidth("20%")
         .setSortable(true)
