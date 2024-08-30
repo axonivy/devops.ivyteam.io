@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
-import io.ivyteam.devops.settings.SettingsManager;
 
 @RestController
 @RequestMapping("/github-webhook/")
@@ -27,6 +27,9 @@ public class GitHubWebhookController {
 
   @Autowired
   PullRequestRepository prs;
+
+  @Autowired
+  GitHubProvider gitHub;
 
   @GetMapping(produces = "text/plain")
   String get() {
@@ -80,7 +83,7 @@ public class GitHubWebhookController {
   }
 
   private void validateOrg(Organization org) {
-    if (org == null || org.login == null || !org.login.equals(SettingsManager.INSTANCE.get().gitHubOrg())) {
+    if (org == null || org.login == null || !org.login.equals(gitHub.org())) {
       throw new RuntimeException("Invalid organization provided: " + org);
     }
   }

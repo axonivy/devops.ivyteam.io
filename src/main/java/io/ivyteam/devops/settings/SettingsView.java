@@ -24,7 +24,6 @@ public class SettingsView extends View {
   private final NativeLabel progressBarLabelText;
   private final ProgressBar progressBar;
 
-  private final TextField githubOrganization;
   private final PasswordField githubClientId;
   private final PasswordField githubClientSecret;
   private final TextField gitHubAppId;
@@ -56,10 +55,6 @@ public class SettingsView extends View {
       synchronizer.start();
     });
 
-    githubOrganization = new TextField("GitHub Organization");
-    githubOrganization.setValue(settings.gitHubOrg());
-    githubOrganization.addValueChangeListener(event -> saveSettings());
-
     githubClientId = new PasswordField("GitHub Client ID");
     githubClientId.setValue(settings.gitHubClientId());
     githubClientId.addValueChangeListener(event -> saveSettings());
@@ -85,7 +80,7 @@ public class SettingsView extends View {
     branchProtectionPrefixes.addValueChangeListener(event -> saveSettings());
 
     var formLayout = new FormLayout();
-    formLayout.add(githubOrganization, githubClientId, githubClientSecret, gitHubAppId, gitHubAppInstallationId,
+    formLayout.add(githubClientId, githubClientSecret, gitHubAppId, gitHubAppInstallationId,
         excludedBranchPrefixes,
         branchProtectionPrefixes);
     formLayout.setResponsiveSteps(new ResponsiveStep("0", 1));
@@ -103,7 +98,6 @@ public class SettingsView extends View {
   }
 
   private void saveSettings() {
-    settings.gitHubOrg(githubOrganization.getValue());
     settings.gitHubClientId(githubClientId.getValue());
     settings.gitHubClientSecret(githubClientSecret.getValue());
     settings.gitHubAppId(gitHubAppId.getValue());

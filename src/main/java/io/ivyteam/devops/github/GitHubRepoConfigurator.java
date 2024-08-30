@@ -9,10 +9,12 @@ import io.ivyteam.devops.settings.SettingsManager;
 
 public class GitHubRepoConfigurator {
 
+  private final GitHubProvider gitHub;
   private final BranchRepository branches;
   private final Repo repo;
 
-  public GitHubRepoConfigurator(BranchRepository branches, Repo repo) {
+  public GitHubRepoConfigurator(GitHubProvider gitHub, BranchRepository branches, Repo repo) {
+    this.gitHub = gitHub;
     this.branches = branches;
     this.repo = repo;
   }
@@ -20,7 +22,7 @@ public class GitHubRepoConfigurator {
   public boolean run() {
     try {
       var changed = false;
-      var ghRepo = GitHubProvider.get().getRepository(repo.name());
+      var ghRepo = gitHub.get().getRepository(repo.name());
       if (ghRepo.isPrivate() || ghRepo.isArchived()) {
         return changed;
       }

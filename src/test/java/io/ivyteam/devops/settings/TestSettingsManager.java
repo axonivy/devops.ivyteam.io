@@ -14,17 +14,17 @@ class TestSettingsManager {
   void get() {
     var manager = new SettingsManager(tempDir.resolve("abc.properties"));
     var settings = manager.get();
-    assertThat(settings.gitHubOrg()).isEmpty();
+    assertThat(settings.gitHubAppId()).isEmpty();
   }
 
   @Test
   void set() {
     var manager = new SettingsManager(tempDir.resolve("abc.properties"));
     var settings = manager.get();
-    settings.gitHubOrg("myorg");
+    settings.gitHubAppId("myorg");
     manager.save(settings);
 
     settings = manager.get();
-    assertThat(settings.gitHubOrg()).isEqualTo("myorg");
+    assertThat(settings.gitHubAppId()).isEqualTo("myorg");
   }
 }
