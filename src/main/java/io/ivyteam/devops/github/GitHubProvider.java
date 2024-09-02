@@ -13,15 +13,14 @@ import io.ivyteam.devops.settings.SettingsManager;
 @Service
 public class GitHubProvider {
 
-  private final GHAppInstallation installation;
-  private final String token;
+  private static final long TOKEN_LIFETIME = 60000;
 
-  public GitHubProvider() {
-    this.installation = installation();
-    this.token = token();
-  }
+  private GHAppInstallation installation;
+  private long tokenCreated;
+  private String token;
 
   public GitHub get() {
+    createToken();
     try {
       return new GitHubBuilder()
           .withAppInstallationToken(token)
@@ -32,13 +31,22 @@ public class GitHubProvider {
   }
 
   public String org() {
+    createToken();
     return installation.getAccount().getLogin();
+  }
+
+  private void createToken() {
+    if (installation == null || token == null || TOKEN_LIFETIME < tokenCreated) {
+      this.installation = installation();
+      this.token = token();
+    }
   }
 
   private GHAppInstallation installation() {
     try {
       var settings = SettingsManager.INSTANCE.get();
-      var jwtToken = JwtToken.createJWT(settings.gitHubAppId(), -1);
+      tokenCreated = System.currentTimeMillis();
+      var jwtToken = JwtToken.createJWT(settings.gitHubAppId(), 60000);
       var gitHubApp = new GitHubBuilder().withJwtToken(jwtToken).build();
       return gitHubApp.getApp().getInstallationById(Long.valueOf(settings.gitHubAppInstallationId()));
     } catch (Exception ex) {

@@ -31,11 +31,10 @@ public class JwtToken {
         .issuer(githubAppId)
         .signWith(signingKey, signatureAlgorithm);
 
-    if (ttlMillis > 0) {
-      var expMillis = nowMillis + ttlMillis;
-      var exp = new Date(expMillis);
-      builder.expiration(exp);
-    }
+    var expMillis = nowMillis + ttlMillis;
+    var exp = new Date(expMillis);
+    builder.expiration(exp);
+
     return builder.compact();
   }
 }
