@@ -52,6 +52,7 @@ public abstract class View extends AppLayout {
     sideNav.addItem(new SideNavItem("Pull Requests", "/pulls", VaadinIcon.ARROW_BACKWARD.create()));
     sideNav.addItem(new SideNavItem("Branches", "/branches", VaadinIcon.ROAD_BRANCH.create()));
     sideNav.addItem(new SideNavItem("Users", "/users", VaadinIcon.USERS.create()));
+    sideNav.addItem(new SideNavItem("Jobs", "/jobs", VaadinIcon.PLAY_CIRCLE_O.create()));
     sideNav.addItem(new SideNavItem("Settings", "/settings", VaadinIcon.COG_O.create()));
     return sideNav;
   }
