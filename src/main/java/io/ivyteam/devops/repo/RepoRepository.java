@@ -32,8 +32,9 @@ public class RepoRepository {
             var issues = result.getInt("issues") == 1;
             var wiki = result.getInt("wiki") == 1;
             var hooks = result.getInt("hooks") == 1;
+            var fork = result.getInt("fork") == 1;
 
-            var repo = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks,
+            var repo = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
                 license, securityMd, codeOfConduct);
             repos.add(repo);
           }
@@ -53,7 +54,7 @@ public class RepoRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, license, securityMd, codeOfConduct) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, license, securityMd, codeOfConduct) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
         stmt.setInt(2, repo.archived() ? 1 : 0);
         stmt.setInt(3, repo.privateRepo() ? 1 : 0);
@@ -62,9 +63,10 @@ public class RepoRepository {
         stmt.setInt(6, repo.issues() ? 1 : 0);
         stmt.setInt(7, repo.wiki() ? 1 : 0);
         stmt.setInt(8, repo.hooks() ? 1 : 0);
-        stmt.setString(9, repo.license());
-        stmt.setString(10, repo.securityMd());
-        stmt.setString(11, repo.codeOfConduct());
+        stmt.setInt(9, repo.fork() ? 1 : 0);
+        stmt.setString(10, repo.license());
+        stmt.setString(11, repo.securityMd());
+        stmt.setString(12, repo.codeOfConduct());
 
         stmt.execute();
       }

@@ -12,6 +12,7 @@ CREATE TABLE repository (
     issues INTEGER NOT NULL,
     wiki INTEGER NOT NULL,
     hooks INTEGER NOT NULL,
+    fork INTEGER NOT NULL,
     license TEXT NULL,
     securityMd TEXT NULL,
     codeOfConduct TEXT NULL

@@ -9,6 +9,7 @@ public record Repo(
     boolean issues,
     boolean wiki,
     boolean hooks,
+    boolean fork,
     String license,
     String securityMd,
     String codeOfConduct) {
