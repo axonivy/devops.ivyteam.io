@@ -123,10 +123,11 @@ public class GitHubSynchronizer {
     boolean issues = repo.hasIssues();
     boolean wiki = repo.hasWiki();
     boolean hooks = !repo.getHooks().isEmpty();
+    boolean fork = repo.isFork();
 
     var ghRepo = repo;
 
-    var rr = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, licence,
+    var rr = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, licence,
         securityMd, codeOfConduct);
     repos.create(rr);
 
