@@ -49,16 +49,13 @@ public class RepoView extends View implements HasUrlParameter<String> {
   private GitHubSynchronizer synchronizer;
 
   @Override
-  public String title() {
-    return "Repository";
-  }
-
-  @Override
   public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
     var repo = repos.all().stream()
         .filter(r -> r.name().equals(parameter))
         .findAny()
         .orElseThrow();
+
+    title.setText(repo.name());
 
     var tabSheet = new TabSheet();
 
@@ -77,6 +74,10 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, parameter);
     var gridBranches = new BranchGrid(repoBranches, pullRequests, RepoView.class, routeParameters).create();
     tabSheet.add(tabBranches, gridBranches);
+
+    var tabJobs = new Tab("Jobs");
+    var jobs = createJobs(repo);
+    tabSheet.add(tabJobs, jobs);
 
     tabSheet.setSizeFull();
     setContent(tabSheet);
@@ -139,6 +140,13 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
     tabSheet.setSizeFull();
     formLayout.add(tabSheet);
+
+    return formLayout;
+  }
+
+  private Component createJobs(Repo repo) {
+    var formLayout = new FormLayout();
+    formLayout.setResponsiveSteps(new ResponsiveStep("0", 2));
 
     var btnSynch = new Button("Reindex");
     btnSynch.addClickListener(event -> synch(repo));
