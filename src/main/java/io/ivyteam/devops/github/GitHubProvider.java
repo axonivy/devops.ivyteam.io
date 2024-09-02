@@ -38,7 +38,7 @@ public class GitHubProvider {
   private GHAppInstallation installation() {
     try {
       var settings = SettingsManager.INSTANCE.get();
-      var jwtToken = JwtToken.createJWT(settings.gitHubAppId(), 600000);
+      var jwtToken = JwtToken.createJWT(settings.gitHubAppId(), -1);
       var gitHubApp = new GitHubBuilder().withJwtToken(jwtToken).build();
       return gitHubApp.getApp().getInstallationById(Long.valueOf(settings.gitHubAppInstallationId()));
     } catch (Exception ex) {

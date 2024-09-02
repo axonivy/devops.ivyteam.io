@@ -28,7 +28,7 @@ import io.ivyteam.devops.user.User;
 
 public class BranchGrid {
 
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private static final String PREFIXES_KEY = "filter";
   private static final String SEARCH_KEY = "search";
 
