@@ -25,7 +25,8 @@ public abstract class View extends AppLayout {
     title = new H1(title());
     title.getStyle()
         .set("font-size", "var(--lumo-font-size-l)")
-        .set("margin-left", "18px");
+        .set("margin-left", "18px")
+        .set("padding-top", "5px");
     layout.addAndExpand(title);
 
     var session = ApplicationContextUtil.getBean(UserSession.class);
