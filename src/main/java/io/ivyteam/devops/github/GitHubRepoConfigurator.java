@@ -95,7 +95,7 @@ public class GitHubRepoConfigurator {
     for (var prefix : SettingsManager.INSTANCE.get().branchProtectionPrefixes().split(",")) {
       LOGGER.info("Check if " + branch.name() + " starts with " + prefix);
       if (branch.name().startsWith(prefix)) {
-        return false;
+        return true;
       }
     }
     return false;
