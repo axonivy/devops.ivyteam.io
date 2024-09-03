@@ -88,6 +88,12 @@ public class GitHubSynchronizer {
         synch(repo);
       }
       notify("Indexing finished", 1);
+
+      for (var r : this.repos.all()) {
+        notify("Update repository settings of " + r.name(), 1);
+        new GitHubRepoConfigurator(gitHub, branches, r).run();
+      }
+
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     } finally {
