@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.github.GitHubSynchronizer.Progress;
-import io.ivyteam.devops.repo.RepoRepository;
 
 @Component
 public class GitHubReindexingJob {
@@ -20,15 +18,6 @@ public class GitHubReindexingJob {
   @Autowired
   private GitHubSynchronizer synchronizer;
 
-  @Autowired
-  private RepoRepository repos;
-
-  @Autowired
-  private BranchRepository branches;
-
-  @Autowired
-  private GitHubProvider gitHub;
-
   @Scheduled(cron = "0 11 0 * * ?")
   public void reindex() {
     Consumer<Progress> listener = this::log;
@@ -37,12 +26,6 @@ public class GitHubReindexingJob {
       synchronizer.run();
     } finally {
       synchronizer.removeListener(listener);
-    }
-    for (var repo : repos.all()) {
-      var changed = new GitHubRepoConfigurator(gitHub, branches, repo).run();
-      if (changed) {
-        synchronizer.synch(repo);
-      }
     }
   }
 
