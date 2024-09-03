@@ -91,7 +91,11 @@ public class GitHubSynchronizer {
 
       for (var r : this.repos.all()) {
         notify("Update repository settings of " + r.name(), 1);
-        new GitHubRepoConfigurator(gitHub, branches, r).run();
+        var configurator = new GitHubRepoConfigurator(gitHub, branches, r);
+        var changed = configurator.run();
+        if (changed) {
+          synch(r);
+        }
       }
 
     } catch (IOException ex) {
