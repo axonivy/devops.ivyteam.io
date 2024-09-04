@@ -26,8 +26,10 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         .authorizeHttpRequests(
             authz -> {
               authz.requestMatchers(GitHubWebhookController.PATH).anonymous();
-            });
+            })
+        .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
     super.configure(http);
+    http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
     http.oauth2Login(c -> c.loginPage("/login").permitAll());
   }
 

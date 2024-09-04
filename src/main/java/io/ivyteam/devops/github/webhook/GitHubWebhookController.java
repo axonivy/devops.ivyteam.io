@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.github.GitHubProvider;
@@ -20,6 +22,7 @@ import io.ivyteam.devops.pullrequest.PullRequestRepository;
 
 @RestController
 @RequestMapping(GitHubWebhookController.PATH)
+@AnonymousAllowed
 public class GitHubWebhookController {
 
   public static final String PATH = "/github-webhook/";
