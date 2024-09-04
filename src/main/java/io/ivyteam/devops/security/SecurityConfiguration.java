@@ -13,12 +13,15 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
+import io.ivyteam.devops.github.webhook.GitHubWebhookController;
+
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration extends VaadinWebSecurity {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests(authz -> authz.requestMatchers(GitHubWebhookController.PATH).anonymous());
     super.configure(http);
     http.oauth2Login(c -> c.loginPage("/login").permitAll());
   }
