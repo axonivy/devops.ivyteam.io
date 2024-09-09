@@ -176,7 +176,7 @@ public class GitHubSynchronizer {
     try {
       var lastCommit = repo.getCommit(branch.getSHA1());
       var author = lastCommit.getAuthor();
-      var lastCommitAuthor = "?";
+      var lastCommitAuthor = "[unknown]";
       if (author != null) {
         lastCommitAuthor = author.getLogin();
       }
