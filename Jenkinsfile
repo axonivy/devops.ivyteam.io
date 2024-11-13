@@ -33,7 +33,7 @@ pipeline {
                       -H "Content-Type: multipart/form-data" \
                       -H "X-API-Key: ' + API_KEY + '" \
                       -F "project=ca1c9d8a-e046-42fc-8aea-c849f373fbc9" \
-                      -F "bom=@target/bom.xml"'
+                      -F "bom=@target/bom.json"'
               }
             }
           }
