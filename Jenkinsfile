@@ -27,7 +27,7 @@ pipeline {
             maven cmd: "clean install -Pproduction"
 
             if (env.BRANCH_NAME == 'master') {
-              maven cmd: "org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+              maven cmd: "org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -DincludeLicenseText=true"
               withCredentials([string(credentialsId: 'dependency-track', variable: 'API_KEY')]) {
                 sh 'curl -X POST -v https://dependency-track.ivyteam.io/api/v1/bom \
                       -H "Content-Type: multipart/form-data" \
