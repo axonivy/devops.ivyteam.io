@@ -29,10 +29,12 @@ pipeline {
             if (env.BRANCH_NAME == 'master') {
               maven cmd: "org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -DincludeLicenseText=true -DoutputFormat=json"
               withCredentials([string(credentialsId: 'dependency-track', variable: 'API_KEY')]) {
-                sh 'curl -X POST -v https://api.dependency-track.ivyteam.io/api/v1/bom \
+                sh 'curl -v --fail -X POST https://api.dependency-track.ivyteam.io/api/v1/bom \
                       -H "Content-Type: multipart/form-data" \
                       -H "X-API-Key: ' + API_KEY + '" \
-                      -F "project=ca1c9d8a-e046-42fc-8aea-c849f373fbc9" \
+                      -F "autoCreate=true" \
+                      -F "projectName=devops.ivyteam.io" \
+                      -F "projectVersion=master" \
                       -F "bom=@target/bom.json"'
               }
             }
