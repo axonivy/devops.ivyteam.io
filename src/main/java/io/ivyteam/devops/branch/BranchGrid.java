@@ -53,7 +53,8 @@ public class BranchGrid {
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
-    grid.addComponentColumn(branch -> new Anchor(new User(branch.lastCommitAuthor()).link(), branch.lastCommitAuthor()))
+    grid.addComponentColumn(
+        branch -> new Anchor(new User(branch.lastCommitAuthor(), "").link(), branch.lastCommitAuthor()))
         .setHeader("Author")
         .setWidth("10%")
         .setSortable(true)

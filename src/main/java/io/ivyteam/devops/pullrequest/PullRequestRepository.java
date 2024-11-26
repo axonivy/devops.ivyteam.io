@@ -57,7 +57,7 @@ public class PullRequestRepository {
   }
 
   public void create(PullRequest pr) {
-    var user = new User(pr.user());
+    var user = new User(pr.user(), null);
     if (!users.exists(user)) {
       users.create(user);
     }

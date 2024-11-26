@@ -38,6 +38,18 @@ public class UserRepository {
     }
   }
 
+  public void update(UserUpdate user) {
+    try (var connection = db.connection()) {
+      try (var stmt = connection.prepareStatement("UPDATE user SET avatarUrl = (?) WHERE name = (?)")) {
+        stmt.setString(1, user.avatarUrl());
+        stmt.setString(2, user.name());
+        stmt.execute();
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
   public boolean exists(User user) {
     try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM user WHERE name = ?")) {
@@ -64,6 +76,7 @@ public class UserRepository {
 
   private User toUser(ResultSet result) throws SQLException {
     var name = result.getString("name");
-    return new User(name);
+    var avatarUrl = result.getString("avatarUrl");
+    return new User(name, avatarUrl);
   }
 }

@@ -1,5 +1,6 @@
 CREATE TABLE user (
     name VARCHAR(200) NOT NULL,
+    avatarUrl VARCHAR(200) NULL,
     PRIMARY KEY (name)
 );
 
