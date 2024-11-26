@@ -21,6 +21,8 @@ import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
+import io.ivyteam.devops.user.UserRepository;
+import io.ivyteam.devops.user.UserUpdate;
 
 @Service
 public class GitHubSynchronizer {
@@ -36,6 +38,9 @@ public class GitHubSynchronizer {
 
   @Autowired
   private BranchRepository branches;
+
+  @Autowired
+  private UserRepository users;
 
   private boolean isRunning = false;
 
@@ -74,13 +79,15 @@ public class GitHubSynchronizer {
       var org = gitHub.org();
 
       notify("Loading repositories from GitHub Organization " + org, 0);
+
       var repos = reposFor(org);
       double counter = 0;
       double allRepos = repos.size();
       for (var repo : repos) {
         counter++;
 
-        var text = "Indexing repository " + repo.getFullName() + " (" + (int) counter + "/" + (int) allRepos + ")";
+        var text = "Indexing repository " + repo.getFullName() + " (" + (int) counter
+            + "/" + (int) allRepos + ")";
         var percent = (counter * 100 / allRepos) / 100;
         notify(text, percent);
 
@@ -98,7 +105,21 @@ public class GitHubSynchronizer {
         }
       }
 
-    } catch (IOException ex) {
+      for (var u : users.all()) {
+        try {
+          var user = gitHub.get().getUser(u.name());
+          if (user != null) {
+            var update = UserUpdate.create(user.getLogin())
+                .avatarUrl(user.getAvatarUrl())
+                .build();
+            users.update(update);
+          }
+        } catch (Exception ex) {
+          System.out.println("Could not find user " + u.name());
+        }
+      }
+
+    } catch (Exception ex) {
       throw new RuntimeException(ex);
     } finally {
       isRunning = false;

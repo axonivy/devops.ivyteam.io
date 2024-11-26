@@ -44,7 +44,7 @@ public class PullRequestGrid {
         .setComparator(Comparator.comparing(pr -> pr.repository()));
 
     grid
-        .addComponentColumn(pr -> new Anchor(new User(pr.user()).link(), pr.user()))
+        .addComponentColumn(pr -> new Anchor(new User(pr.user(), "").link(), pr.user()))
         .setHeader("User")
         .setWidth("20%")
         .setSortable(true)
