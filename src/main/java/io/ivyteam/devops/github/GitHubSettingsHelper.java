@@ -22,7 +22,7 @@ public class GitHubSettingsHelper extends GHRepository {
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(apiUrl))
                     .header("Accept", "application/vnd.github+json")
-                    .header("Authorization", "Bearer s" + token)
+                    .header("Authorization", "Bearer " + token)
                     .PUT(HttpRequest.BodyPublishers.noBody())
                     .build();
 
