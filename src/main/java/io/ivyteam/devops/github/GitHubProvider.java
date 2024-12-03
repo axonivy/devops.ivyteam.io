@@ -54,7 +54,7 @@ public class GitHubProvider {
     }
   }
 
-  private String token() {
+  public String token() {
     try {
       return installation
           .createToken()

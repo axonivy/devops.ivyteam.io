@@ -33,7 +33,7 @@ public class ReposView extends View {
 
     grid.addComponentColumn(p -> new Anchor(p.link(), p.name()))
         .setHeader("Name")
-        .setWidth("60%")
+        .setWidth("50%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
@@ -78,6 +78,20 @@ public class ReposView extends View {
           return icon;
         })
         .setHeader("License")
+        .setWidth("10%")
+        .setSortable(true);
+
+    grid
+        .addComponentColumn(repo -> {
+          var icon = createIcon(VaadinIcon.SHIELD);
+          icon.setTooltipText(
+              "Dependabot Alerts Enabled: Get notified when one of your dependencies has a vulnerability");
+          if (repo.isVulnAlertOn()) {
+            return icon;
+          }
+          return null;
+        })
+        .setHeader("Alerts Enabled")
         .setWidth("10%")
         .setSortable(true);
 

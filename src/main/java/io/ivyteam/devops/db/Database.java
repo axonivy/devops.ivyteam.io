@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class Database {
 
-  private static final String VERSION = "11";
+  private static final String VERSION = "12";
   private static final Path PATH = Path.of("data", "devopsV" + VERSION + ".db");
 
   public Connection connection() {

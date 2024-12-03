@@ -58,6 +58,11 @@ public class GitHubRepoConfigurator {
         ghRepo.enableWiki(false);
         changed = true;
       }
+      if (!repo.isVulnAlertOn()) {
+        LOGGER.info("Enable Vulnerability-alerts");
+        GitHubSettingsHelper.enableDependabot(ghRepo.getUrl(), gitHub.token());
+        changed = true;
+      }
       if (repo.hooks()) {
         for (var hook : ghRepo.getHooks()) {
           LOGGER.info("Delete hook");

@@ -155,11 +155,12 @@ public class GitHubSynchronizer {
     boolean wiki = repo.hasWiki();
     boolean hooks = !repo.getHooks().isEmpty();
     boolean fork = repo.isFork();
+    boolean isVulnAlertOn = repo.isVulnerabilityAlertsEnabled();
 
     var ghRepo = repo;
 
-    var rr = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, licence,
-        securityMd, codeOfConduct);
+    var rr = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
+        isVulnAlertOn, licence, securityMd, codeOfConduct);
     repos.create(rr);
 
     gitHubPrs.stream()
