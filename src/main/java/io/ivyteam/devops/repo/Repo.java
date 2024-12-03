@@ -10,6 +10,7 @@ public record Repo(
     boolean wiki,
     boolean hooks,
     boolean fork,
+    boolean isVulnAlertOn,
     String license,
     String securityMd,
     String codeOfConduct) {

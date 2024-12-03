@@ -107,6 +107,11 @@ public class RepoView extends View implements HasUrlParameter<String> {
     chkFork.setReadOnly(true);
     formLayout.add(chkFork);
 
+    var chkIsVulnAlertOn = new Checkbox("Enable vulnerability alerts");
+    chkIsVulnAlertOn.setValue(repo.isVulnAlertOn());
+    chkIsVulnAlertOn.setReadOnly(true);
+    formLayout.add(chkIsVulnAlertOn);
+
     var chkDeleteBranchOnMerge = new Checkbox("Delete branch on merge");
     chkDeleteBranchOnMerge.setValue(repo.deleteBranchOnMerge());
     chkDeleteBranchOnMerge.setReadOnly(true);
