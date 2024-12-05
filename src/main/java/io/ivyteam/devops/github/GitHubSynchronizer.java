@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.dependabot.DependabotApiHelper;
+import io.ivyteam.devops.dependabot.DependabotRepository;
 import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
@@ -41,6 +43,9 @@ public class GitHubSynchronizer {
 
   @Autowired
   private UserRepository users;
+
+  @Autowired
+  private DependabotRepository dependabots;
 
   private boolean isRunning = false;
 
@@ -93,6 +98,11 @@ public class GitHubSynchronizer {
 
         repo = gitHub.get().getRepository(repo.getFullName());
         synch(repo);
+        if (repo.isVulnerabilityAlertsEnabled()) {
+          var helper = new DependabotApiHelper(dependabots, repo, gitHub.token());
+          helper.synch();
+        }
+
       }
       notify("Indexing finished", 1);
 

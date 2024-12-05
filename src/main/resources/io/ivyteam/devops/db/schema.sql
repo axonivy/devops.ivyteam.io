@@ -41,3 +41,13 @@ CREATE TABLE branch (
     FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,
     FOREIGN KEY (lastCommitAuthor) REFERENCES user (name) ON DELETE CASCADE
 );
+
+CREATE TABLE dependabot (
+    repository VARCHAR(200) NOT NULL,
+    critical INTEGER NOT NULL,
+    high INTEGER NOT NULL,
+    medium INTEGER NOT NULL,
+    low INTEGER NOT NULL,
+    PRIMARY KEY (repository)
+    FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE
+);

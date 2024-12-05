@@ -7,6 +7,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.AnchorTarget;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -18,22 +19,23 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.dependabot.DependabotRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
 
 @Route("")
 public class ReposView extends View {
-
   private final Grid<Repo> grid;
 
-  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches) {
+  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
+      DependabotRepository dependabots) {
     var repositories = repos.all();
     grid = new Grid<>(repositories);
     title.setText("Repositories (" + repositories.size() + ")");
 
     grid.addComponentColumn(p -> new Anchor(p.link(), p.name()))
         .setHeader("Name")
-        .setWidth("50%")
+        .setWidth("40%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
@@ -91,26 +93,51 @@ public class ReposView extends View {
           }
           return null;
         })
-        .setHeader("Alerts Enabled")
-        .setWidth("10%")
+        .setHeader("Alerts  ")
+        .setWidth("75px")
         .setSortable(true);
+
+    grid.addComponentColumn(repo -> {
+      var layout = new HorizontalLayout();
+      if (repo.archived()) {
+        var icon = createIcon(VaadinIcon.ARCHIVE);
+        icon.setTooltipText("Archived");
+        layout.add(icon);
+      }
+      if (repo.privateRepo()) {
+        var icon = createIcon(VaadinIcon.LOCK);
+        icon.setTooltipText("Private");
+        layout.add(icon);
+      }
+      return layout;
+    }).setWidth("75px");
 
     grid
         .addComponentColumn(repo -> {
-          var layout = new HorizontalLayout();
-          if (repo.archived()) {
-            var icon = createIcon(VaadinIcon.ARCHIVE);
-            icon.setTooltipText("Archived");
-            layout.add(icon);
+          var debendabot = dependabots.getByRepo(repo.name());
+          if (debendabot == null) {
+            return null;
+          } else {
+            var layout = new HorizontalLayout();
+            var a = new Anchor(debendabot.link(),
+                String.valueOf("C: " + debendabot.critical()
+                    + " | H: " + debendabot.high())
+                    + " | M: " + debendabot.medium()
+                    + " | L: " + debendabot.low(),
+                AnchorTarget.BLANK);
+            if (debendabot.critical() + debendabot.high() > 0) {
+              a.getElement().getThemeList().add("badge pill small error");
+            } else if (debendabot.low() + debendabot.medium() > 0) {
+              a.getElement().getThemeList().add("badge pill small contrast");
+            } else {
+              a.getElement().getThemeList().add("badge pill small success");
+            }
+
+            layout.add(a);
+            layout.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
+            return layout;
           }
-          if (repo.privateRepo()) {
-            var icon = createIcon(VaadinIcon.LOCK);
-            icon.setTooltipText("Private");
-            layout.add(icon);
-          }
-          return layout;
-        })
-        .setWidth("10%");
+        }).setHeader("Dependabot Alerts").setWidth("200px").setSortable(true);
 
     grid.setHeightFull();
 
@@ -119,6 +146,7 @@ public class ReposView extends View {
     layout.setHeightFull();
     layout.add(inputLayout);
     layout.add(grid);
+
     setContent(layout);
   }
 
