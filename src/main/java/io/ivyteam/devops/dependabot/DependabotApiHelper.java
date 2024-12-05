@@ -61,7 +61,7 @@ public class DependabotApiHelper {
   }
 
   private static String getAlerts(URL url, String token) {
-    var apiUrl = toUri(url, DEPENDABOT_ALERTS_PATH);
+    var apiUrl = toUri(url, DEPENDABOT_ALERTS_PATH + "?per_page=100");
     try (var client = HttpClient.newHttpClient()) {
       var request = HttpRequest.newBuilder()
           .uri(apiUrl)
