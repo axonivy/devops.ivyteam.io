@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.dependabot.DependabotApiHelper;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.settings.SettingsManager;
 
@@ -29,6 +30,7 @@ public class GitHubRepoConfigurator {
       LOGGER.info("Update settings of " + repo.name());
       var changed = false;
       var ghRepo = gitHub.get().getRepository(repo.name());
+
       // if (ghRepo.isPrivate()) {
       // LOGGER.info("Skip " + repo.name() + " because it is private");
       // return changed;
@@ -60,7 +62,7 @@ public class GitHubRepoConfigurator {
       }
       if (!repo.isVulnAlertOn()) {
         LOGGER.info("Enable Vulnerability-alerts");
-        GitHubSettingsHelper.enableDependabot(ghRepo.getUrl(), gitHub.token());
+        DependabotApiHelper.enableAlerts(ghRepo.getUrl(), gitHub.token());
         changed = true;
       }
       if (repo.hooks()) {
