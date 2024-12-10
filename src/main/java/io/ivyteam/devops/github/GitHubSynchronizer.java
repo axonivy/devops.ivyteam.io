@@ -17,12 +17,13 @@ import org.springframework.stereotype.Service;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
-import io.ivyteam.devops.dependabot.DependabotApiHelper;
-import io.ivyteam.devops.dependabot.DependabotRepository;
 import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.RepoRepository;
+import io.ivyteam.devops.securityscanner.ScanTypeEnum;
+import io.ivyteam.devops.securityscanner.SecurityScannerApiHelper;
+import io.ivyteam.devops.securityscanner.SecurityScannerRepository;
 import io.ivyteam.devops.user.UserRepository;
 import io.ivyteam.devops.user.UserUpdate;
 
@@ -45,7 +46,7 @@ public class GitHubSynchronizer {
   private UserRepository users;
 
   @Autowired
-  private DependabotRepository dependabots;
+  private SecurityScannerRepository securityScanners;
 
   private boolean isRunning = false;
 
@@ -98,9 +99,13 @@ public class GitHubSynchronizer {
 
         repo = gitHub.get().getRepository(repo.getFullName());
         synch(repo);
+        var helper = new SecurityScannerApiHelper(securityScanners, repo, gitHub.token());
         if (repo.isVulnerabilityAlertsEnabled()) {
-          var helper = new DependabotApiHelper(dependabots, repo, gitHub.token());
-          helper.synch();
+          helper.synch(ScanTypeEnum.DEPENDABOT.getValue());
+        }
+        if (!repo.isPrivate()) {
+          helper.synch(ScanTypeEnum.CODE_SCANNING.getValue());
+          helper.synch(ScanTypeEnum.SECRET_SCANNING.getValue());
         }
 
       }

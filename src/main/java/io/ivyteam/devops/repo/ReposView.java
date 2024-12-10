@@ -19,8 +19,10 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.branch.BranchRepository;
-import io.ivyteam.devops.dependabot.DependabotRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.securityscanner.ScanTypeEnum;
+import io.ivyteam.devops.securityscanner.SecurityScanner;
+import io.ivyteam.devops.securityscanner.SecurityScannerRepository;
 import io.ivyteam.devops.view.View;
 
 @Route("")
@@ -28,7 +30,7 @@ public class ReposView extends View {
   private final Grid<Repo> grid;
 
   public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
-      DependabotRepository dependabots) {
+      SecurityScannerRepository securityscanners) {
     var repositories = repos.all();
     grid = new Grid<>(repositories);
     title.setText("Repositories (" + repositories.size() + ")");
@@ -83,20 +85,6 @@ public class ReposView extends View {
         .setWidth("10%")
         .setSortable(true);
 
-    grid
-        .addComponentColumn(repo -> {
-          var icon = createIcon(VaadinIcon.SHIELD);
-          icon.setTooltipText(
-              "Dependabot Alerts Enabled: Get notified when one of your dependencies has a vulnerability");
-          if (repo.isVulnAlertOn()) {
-            return icon;
-          }
-          return null;
-        })
-        .setHeader("Alerts  ")
-        .setWidth("75px")
-        .setSortable(true);
-
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
       if (repo.archived()) {
@@ -112,32 +100,36 @@ public class ReposView extends View {
       return layout;
     }).setWidth("75px");
 
-    grid
-        .addComponentColumn(repo -> {
-          var debendabot = dependabots.getByRepo(repo.name());
-          if (debendabot == null) {
-            return null;
-          } else {
-            var layout = new HorizontalLayout();
-            var a = new Anchor(debendabot.link(),
-                String.valueOf("C: " + debendabot.critical()
-                    + " | H: " + debendabot.high())
-                    + " | M: " + debendabot.medium()
-                    + " | L: " + debendabot.low(),
-                AnchorTarget.BLANK);
-            if (debendabot.critical() + debendabot.high() > 0) {
-              a.getElement().getThemeList().add("badge pill small error");
-            } else if (debendabot.low() + debendabot.medium() > 0) {
-              a.getElement().getThemeList().add("badge pill small contrast");
-            } else {
-              a.getElement().getThemeList().add("badge pill small success");
-            }
+    grid.addComponentColumn(repo -> {
+      var layout = new HorizontalLayout();
+      var dependabot = securityscanners.getByRepoAndScantype(repo.name(), ScanTypeEnum.DEPENDABOT.getValue());
+      if (dependabot != null) {
+        layout.add(createSecurityScannerAnchor(dependabot, dependabot.link_dependabot(),
+            ScanTypeEnum.DEPENDABOT.getValue()));
+      }
+      return layout;
+    }).setHeader("Dependabot").setWidth("100px").setSortable(true);
 
-            layout.add(a);
-            layout.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
-            return layout;
-          }
-        }).setHeader("Dependabot Alerts").setWidth("200px").setSortable(true);
+    grid.addComponentColumn(repo -> {
+      var layout = new HorizontalLayout();
+      var codeScan = securityscanners.getByRepoAndScantype(repo.name(), ScanTypeEnum.CODE_SCANNING.getValue());
+      if (codeScan != null) {
+        layout.add(
+            createSecurityScannerAnchor(codeScan, codeScan.link_codeScan(), ScanTypeEnum.CODE_SCANNING.getValue()));
+      }
+      return layout;
+    }).setHeader("CodeScan").setWidth("100px").setSortable(true);
+
+    grid.addComponentColumn(repo -> {
+      var layout = new HorizontalLayout();
+      var secretScan = securityscanners.getByRepoAndScantype(repo.name(), ScanTypeEnum.SECRET_SCANNING.getValue());
+      if (secretScan != null) {
+        layout.add(
+            createSecurityScannerAnchor(secretScan, secretScan.link_secretScan(),
+                ScanTypeEnum.SECRET_SCANNING.getValue()));
+      }
+      return layout;
+    }).setHeader("SecretScan").setWidth("100px").setSortable(true);
 
     grid.setHeightFull();
 
@@ -214,4 +206,29 @@ public class ReposView extends View {
       return matchesName;
     }
   }
+
+  private Anchor createSecurityScannerAnchor(SecurityScanner ss, String link, String name) {
+    int summary = ss.critical() + ss.high() + ss.medium() + ss.low();
+    var text = name + "->  C: " + ss.critical() + " | H: " + ss.high() + " | M: " + ss.medium() + " | L: " + ss.low();
+
+    Icon icon = VaadinIcon.QUESTION_CIRCLE.create();
+    icon.setSize("14px");
+    icon.setTooltipText(text);
+    icon.getStyle().set("margin-left", "4px");
+
+    var a = new Anchor(link, String.valueOf(summary), AnchorTarget.BLANK);
+    a.add(icon);
+
+    if (ss.critical() + ss.high() > 0) {
+      a.getElement().getThemeList().add("badge pill small error");
+    } else if (ss.low() + ss.medium() > 0) {
+      a.getElement().getThemeList().add("badge pill small contrast");
+    } else {
+      a.getElement().getThemeList().add("badge pill small success");
+      icon.setIcon(VaadinIcon.CHECK);
+    }
+
+    return a;
+  }
+
 }
