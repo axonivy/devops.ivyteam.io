@@ -1,4 +1,4 @@
-package io.ivyteam.devops.dependabot;
+package io.ivyteam.devops.securityscanner;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -17,11 +17,10 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class DependabotApiHelper {
+public class SecurityScannerApiHelper {
 
   private final static ObjectMapper MAPPER = new ObjectMapper();
-  private final static Logger LOGGER = LoggerFactory.getLogger(DependabotApiHelper.class);
-  private final static String DEPENDABOT_ALERTS_PATH = "/dependabot/alerts";
+  private final static Logger LOGGER = LoggerFactory.getLogger(SecurityScannerApiHelper.class);
   private final static String VULNAERABILITY_ALERTS_PATH = "vulnerability-alerts";
   private final static String ALERT_REQUIRED_STATE = "open";
   private final static String LEVEL_CRITICAL = "critical";
@@ -29,17 +28,17 @@ public class DependabotApiHelper {
   private final static String LEVEL_MEDIUM = "medium";
   private final static String LEVEL_LOW = "low";
 
-  private DependabotRepository dependabots;
+  private SecurityScannerRepository securityScanners;
   private GHRepository repo;
   private String token;
 
-  public DependabotApiHelper(DependabotRepository dependabots, GHRepository repo, String token) {
-    this.dependabots = dependabots;
+  public SecurityScannerApiHelper(SecurityScannerRepository securityScanners, GHRepository repo, String token) {
+    this.securityScanners = securityScanners;
     this.repo = repo;
     this.token = token;
   }
 
-  public static void enableAlerts(URL url, String token) {
+  public static void enableAlerts(URL url, String token, String scantype) {
     var apiUrl = toUri(url, VULNAERABILITY_ALERTS_PATH);
     try (var client = HttpClient.newHttpClient()) {
       var request = HttpRequest.newBuilder()
@@ -60,8 +59,8 @@ public class DependabotApiHelper {
     }
   }
 
-  private static String getAlerts(URL url, String token) {
-    var apiUrl = toUri(url, DEPENDABOT_ALERTS_PATH + "?per_page=100");
+  private static String getAlerts(URL url, String token, String scantype) {
+    var apiUrl = toUri(url, "/" + scantype + "/alerts?per_page=100");
     try (var client = HttpClient.newHttpClient()) {
       var request = HttpRequest.newBuilder()
           .uri(apiUrl)
@@ -73,53 +72,66 @@ public class DependabotApiHelper {
       var response = client.send(request, HttpResponse.BodyHandlers.ofString());
       if (response.statusCode() == HttpURLConnection.HTTP_OK) {
         return response.body();
+      }
+      if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+        return null;
       } else {
-        LOGGER.warn("get dependabots-alerts is failed: " + response.statusCode() + ", api/url: " + apiUrl);
+        LOGGER.warn("get " + scantype + " is failed: " + response.statusCode() + ", api/url: " + apiUrl);
       }
     } catch (Exception ex) {
-      LOGGER.warn("Could not get dependabot alerts", ex);
+      LOGGER.warn("Could not get " + scantype + " alerts", ex);
     }
     return null;
   }
 
-  private static Dependabot parseAlertsResponse(String json, String repoName) {
+  private static SecurityScanner parseAlerts(String json, String repoName, String scantype) {
     try {
       JsonNode root = MAPPER.readTree(json);
       Map<String, Long> severityCounts = new HashMap<>();
 
-      for (JsonNode node : root) {
-        if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
-          severityCounts.merge(node.path("security_vulnerability").path("severity").asText(), 1L, Long::sum);
+      if (scantype.equals(ScanTypeEnum.DEPENDABOT.getValue())) {
+        for (JsonNode node : root) {
+          if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
+            severityCounts.merge(node.path("security_vulnerability").path("severity").asText(), 1L, Long::sum);
+          }
+        }
+      } else if (scantype.equals(ScanTypeEnum.CODE_SCANNING.getValue())) {
+        for (JsonNode node : root) {
+          if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
+            severityCounts.merge(node.path("rule").path("security_severity_level").asText(), 1L, Long::sum);
+          }
+        }
+      } else if (scantype.equals(ScanTypeEnum.SECRET_SCANNING.getValue())) {
+        for (JsonNode node : root) {
+          if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
+            severityCounts.merge((node.path("url").asText() != null ? "high" : null), 1L, Long::sum);
+          }
         }
       }
+
       int low = Math.toIntExact(severityCounts.getOrDefault(LEVEL_LOW, 0L));
       int medium = Math.toIntExact(severityCounts.getOrDefault(LEVEL_MEDIUM, 0L));
       int high = Math.toIntExact(severityCounts.getOrDefault(LEVEL_HIGH, 0L));
       int critical = Math.toIntExact(severityCounts.getOrDefault(LEVEL_CRITICAL, 0L));
-      return new Dependabot(repoName, critical, high, medium, low);
+      return new SecurityScanner(repoName, scantype, critical, high, medium, low);
     } catch (Exception ex) {
       LOGGER.warn("Could not read jsonFile", ex);
     }
     return null;
   }
 
-  public void synch() throws IOException {
-    var json = DependabotApiHelper.getAlerts(repo.getUrl(), token);
+  public void synch(String scantype) throws IOException {
+    var json = SecurityScannerApiHelper.getAlerts(repo.getUrl(), token, scantype);
     if (json == null) {
       return;
     }
-    var alerts = DependabotApiHelper.parseAlertsResponse(json, repo.getName());
+    var alerts = SecurityScannerApiHelper.parseAlerts(json, repo.getName(), scantype);
     if (alerts == null) {
       return;
     }
-    var name = repo.getFullName();
-    int critical = alerts.critical();
-    int high = alerts.high();
-    int medium = alerts.medium();
-    int low = alerts.low();
-
-    var d = new Dependabot(name, critical, high, medium, low);
-    dependabots.create(d);
+    SecurityScanner ss = new SecurityScanner(repo.getFullName(), alerts.scantype(), alerts.critical(), alerts.high(),
+        alerts.medium(), alerts.low());
+    securityScanners.create(ss);
   }
 
   private static URI toUri(URL url, String path) {
@@ -132,4 +144,5 @@ public class DependabotApiHelper {
       throw new RuntimeException("Failed to build URI for dependabot alerts: " + url, ex);
     }
   }
+
 }
