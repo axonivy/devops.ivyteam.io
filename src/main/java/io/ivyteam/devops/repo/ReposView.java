@@ -108,7 +108,15 @@ public class ReposView extends View {
             ScanTypeEnum.DEPENDABOT.getValue()));
       }
       return layout;
-    }).setHeader("Dependabot").setWidth("100px").setSortable(true);
+    }).setHeader("Dependabot").setWidth("100px").setSortable(true)
+        .setComparator((r1, r2) -> {
+          var s1 = securityscanners.getByRepoAndScantype(r1.name(),
+              ScanTypeEnum.DEPENDABOT.getValue());
+          var s2 = securityscanners.getByRepoAndScantype(r2.name(),
+              ScanTypeEnum.DEPENDABOT.getValue());
+
+          return compareSecurityScanners(s1, s2);
+        });
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
@@ -118,7 +126,15 @@ public class ReposView extends View {
             createSecurityScannerAnchor(codeScan, codeScan.link_codeScan(), ScanTypeEnum.CODE_SCANNING.getValue()));
       }
       return layout;
-    }).setHeader("CodeScan").setWidth("100px").setSortable(true);
+    }).setHeader("CodeScan").setWidth("100px").setSortable(true)
+        .setComparator((r1, r2) -> {
+          var s1 = securityscanners.getByRepoAndScantype(r1.name(),
+              ScanTypeEnum.CODE_SCANNING.getValue());
+          var s2 = securityscanners.getByRepoAndScantype(r2.name(),
+              ScanTypeEnum.CODE_SCANNING.getValue());
+
+          return compareSecurityScanners(s1, s2);
+        });
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
@@ -129,7 +145,15 @@ public class ReposView extends View {
                 ScanTypeEnum.SECRET_SCANNING.getValue()));
       }
       return layout;
-    }).setHeader("SecretScan").setWidth("100px").setSortable(true);
+    }).setHeader("SecretScan").setWidth("100px").setSortable(true)
+        .setComparator((r1, r2) -> {
+          var s1 = securityscanners.getByRepoAndScantype(r1.name(),
+              ScanTypeEnum.SECRET_SCANNING.getValue());
+          var s2 = securityscanners.getByRepoAndScantype(r2.name(),
+              ScanTypeEnum.SECRET_SCANNING.getValue());
+
+          return compareSecurityScanners(s1, s2);
+        });
 
     grid.setHeightFull();
 
@@ -205,6 +229,35 @@ public class ReposView extends View {
       var matchesName = repo.name().toLowerCase().contains(searchValue);
       return matchesName;
     }
+  }
+
+  private int compareSecurityScanners(SecurityScanner s1, SecurityScanner s2) {
+    if (s1 == null && s2 == null) {
+      return 0;
+    }
+    if (s1 == null) {
+      return 1;
+    }
+    if (s2 == null) {
+      return -1;
+    }
+
+    int criticalComparison = Integer.compare(s2.critical(), s1.critical());
+    if (criticalComparison != 0) {
+      return criticalComparison;
+    }
+
+    int highComparison = Integer.compare(s2.high(), s1.high());
+    if (highComparison != 0) {
+      return highComparison;
+    }
+
+    int mediumComparison = Integer.compare(s2.medium(), s1.medium());
+    if (mediumComparison != 0) {
+      return mediumComparison;
+    }
+
+    return Integer.compare(s2.low(), s1.low());
   }
 
   private Anchor createSecurityScannerAnchor(SecurityScanner ss, String link, String name) {
