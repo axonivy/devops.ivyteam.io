@@ -216,7 +216,7 @@ public class ReposView extends View {
 
   private int getSortingNr(SecurityScanner s) {
     if (s == null) {
-      return 0;
+      return -1;
     }
     if (s.critical() != 0) {
       return (int) (s.critical() + Math.pow(10, 9));
