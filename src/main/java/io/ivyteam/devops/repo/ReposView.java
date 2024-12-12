@@ -108,7 +108,9 @@ public class ReposView extends View {
             ScanTypeEnum.DEPENDABOT.getValue()));
       }
       return layout;
-    }).setHeader("Dependabot").setWidth("100px").setSortable(true);
+    }).setHeader("Dependabot").setWidth("100px").setSortable(true)
+        .setComparator(Comparator.comparing(
+            r -> getSortingNr(securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.DEPENDABOT.getValue()))));
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
@@ -118,7 +120,9 @@ public class ReposView extends View {
             createSecurityScannerAnchor(codeScan, codeScan.link_codeScan(), ScanTypeEnum.CODE_SCANNING.getValue()));
       }
       return layout;
-    }).setHeader("CodeScan").setWidth("100px").setSortable(true);
+    }).setHeader("CodeScan").setWidth("100px").setSortable(true)
+        .setComparator(Comparator.comparing(
+            r -> getSortingNr(securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.CODE_SCANNING.getValue()))));
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
@@ -129,7 +133,10 @@ public class ReposView extends View {
                 ScanTypeEnum.SECRET_SCANNING.getValue()));
       }
       return layout;
-    }).setHeader("SecretScan").setWidth("100px").setSortable(true);
+    }).setHeader("SecretScan").setWidth("100px").setSortable(true)
+        .setComparator(Comparator.comparing(
+            r -> getSortingNr(
+                securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.SECRET_SCANNING.getValue()))));
 
     grid.setHeightFull();
 
@@ -205,6 +212,13 @@ public class ReposView extends View {
       var matchesName = repo.name().toLowerCase().contains(searchValue);
       return matchesName;
     }
+  }
+
+  private int getSortingNr(SecurityScanner s) {
+    if (s == null) {
+      return 0;
+    }
+    return ((s.critical() * 10 ^ 9) + (s.high() * 10 ^ 6) + (s.medium() * 10 ^ 3) + s.low());
   }
 
   private Anchor createSecurityScannerAnchor(SecurityScanner ss, String link, String name) {
