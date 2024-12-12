@@ -109,14 +109,8 @@ public class ReposView extends View {
       }
       return layout;
     }).setHeader("Dependabot").setWidth("100px").setSortable(true)
-        .setComparator((r1, r2) -> {
-          var s1 = securityscanners.getByRepoAndScantype(r1.name(),
-              ScanTypeEnum.DEPENDABOT.getValue());
-          var s2 = securityscanners.getByRepoAndScantype(r2.name(),
-              ScanTypeEnum.DEPENDABOT.getValue());
-
-          return compareSecurityScanners(s1, s2);
-        });
+        .setComparator(Comparator.comparing(
+            r -> getSortingNr(securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.DEPENDABOT.getValue()))));
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
@@ -127,14 +121,8 @@ public class ReposView extends View {
       }
       return layout;
     }).setHeader("CodeScan").setWidth("100px").setSortable(true)
-        .setComparator((r1, r2) -> {
-          var s1 = securityscanners.getByRepoAndScantype(r1.name(),
-              ScanTypeEnum.CODE_SCANNING.getValue());
-          var s2 = securityscanners.getByRepoAndScantype(r2.name(),
-              ScanTypeEnum.CODE_SCANNING.getValue());
-
-          return compareSecurityScanners(s1, s2);
-        });
+        .setComparator(Comparator.comparing(
+            r -> getSortingNr(securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.CODE_SCANNING.getValue()))));
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
@@ -146,14 +134,9 @@ public class ReposView extends View {
       }
       return layout;
     }).setHeader("SecretScan").setWidth("100px").setSortable(true)
-        .setComparator((r1, r2) -> {
-          var s1 = securityscanners.getByRepoAndScantype(r1.name(),
-              ScanTypeEnum.SECRET_SCANNING.getValue());
-          var s2 = securityscanners.getByRepoAndScantype(r2.name(),
-              ScanTypeEnum.SECRET_SCANNING.getValue());
-
-          return compareSecurityScanners(s1, s2);
-        });
+        .setComparator(Comparator.comparing(
+            r -> getSortingNr(
+                securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.SECRET_SCANNING.getValue()))));
 
     grid.setHeightFull();
 
@@ -231,33 +214,11 @@ public class ReposView extends View {
     }
   }
 
-  private int compareSecurityScanners(SecurityScanner s1, SecurityScanner s2) {
-    if (s1 == null && s2 == null) {
+  private int getSortingNr(SecurityScanner s) {
+    if (s == null) {
       return 0;
     }
-    if (s1 == null) {
-      return 1;
-    }
-    if (s2 == null) {
-      return -1;
-    }
-
-    int criticalComparison = Integer.compare(s2.critical(), s1.critical());
-    if (criticalComparison != 0) {
-      return criticalComparison;
-    }
-
-    int highComparison = Integer.compare(s2.high(), s1.high());
-    if (highComparison != 0) {
-      return highComparison;
-    }
-
-    int mediumComparison = Integer.compare(s2.medium(), s1.medium());
-    if (mediumComparison != 0) {
-      return mediumComparison;
-    }
-
-    return Integer.compare(s2.low(), s1.low());
+    return ((s.critical() * 10 ^ 9) + (s.high() * 10 ^ 6) + (s.medium() * 10 ^ 3) + s.low());
   }
 
   private Anchor createSecurityScannerAnchor(SecurityScanner ss, String link, String name) {
