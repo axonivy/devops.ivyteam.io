@@ -218,7 +218,16 @@ public class ReposView extends View {
     if (s == null) {
       return 0;
     }
-    return ((s.critical() * 10 ^ 9) + (s.high() * 10 ^ 6) + (s.medium() * 10 ^ 3) + s.low());
+    if (s.critical() != 0) {
+      return (int) (s.critical() + Math.pow(10, 9));
+    }
+    if (s.high() != 0) {
+      return (int) (s.high() + Math.pow(10, 6));
+    }
+    if (s.medium() != 0) {
+      return (int) (s.medium() + Math.pow(10, 3));
+    }
+    return s.low();
   }
 
   private Anchor createSecurityScannerAnchor(SecurityScanner ss, String link, String name) {
