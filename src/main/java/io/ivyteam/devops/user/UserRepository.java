@@ -17,6 +17,10 @@ public class UserRepository {
   @Autowired
   private Database db;
 
+  public UserRepository(Database db) {
+    this.db = db;
+  }
+
   public List<User> all() {
     try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM user ORDER BY name")) {
@@ -29,8 +33,9 @@ public class UserRepository {
 
   public void create(User user) {
     try (var connection = db.connection()) {
-      try (var stmt = connection.prepareStatement("INSERT INTO user (name) VALUES (?)")) {
+      try (var stmt = connection.prepareStatement("INSERT INTO user (name, avatarUrl) VALUES (?, ?)")) {
         stmt.setString(1, user.name());
+        stmt.setString(2, user.avatarUrl());
         stmt.execute();
       }
     } catch (SQLException ex) {

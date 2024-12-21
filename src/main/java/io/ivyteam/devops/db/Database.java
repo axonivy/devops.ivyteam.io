@@ -14,7 +14,15 @@ import org.springframework.stereotype.Service;
 public class Database {
 
   private static final String VERSION = "14";
-  private static final Path PATH = Path.of("data", "devopsV" + VERSION + ".db");
+  private final Path path;
+
+  public Database() {
+    this(Path.of("data", "devopsV" + VERSION + ".db"));
+  }
+
+  public Database(Path path) {
+    this.path = path;
+  }
 
   public Connection connection() {
     if (!exists()) {
@@ -25,9 +33,9 @@ public class Database {
 
   private Connection dbConnection() {
     try {
-      Files.createDirectories(PATH.getParent());
+      Files.createDirectories(path.getParent());
       Class.forName("org.sqlite.JDBC");
-      var connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
+      var connection = DriverManager.getConnection("jdbc:sqlite:" + path);
       try (var stmt = connection.createStatement()) {
         stmt.execute("PRAGMA foreign_keys = ON");
       }
@@ -39,7 +47,7 @@ public class Database {
   }
 
   private boolean exists() {
-    return Files.exists(PATH);
+    return Files.exists(path);
   }
 
   private void create() {
