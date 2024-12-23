@@ -15,6 +15,10 @@ public class RepoRepository {
   @Autowired
   private Database db;
 
+  public RepoRepository(Database db) {
+    this.db = db;
+  }
+
   public List<Repo> all() {
     try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM repository ORDER BY name")) {

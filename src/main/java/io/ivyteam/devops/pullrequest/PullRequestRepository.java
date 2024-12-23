@@ -24,6 +24,11 @@ public class PullRequestRepository {
   @Autowired
   private UserRepository users;
 
+  public PullRequestRepository(Database db, UserRepository users) {
+    this.db = db;
+    this.users = users;
+  }
+
   public List<PullRequest> all() {
     try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM pull_request ORDER BY title")) {
@@ -102,12 +107,13 @@ public class PullRequestRepository {
   }
 
   private PullRequest toPr(ResultSet result) throws SQLException {
-    var repository = result.getString("repository");
-    var id = result.getLong("id");
-    var title = result.getString("title");
-    var user = result.getString("user");
-    var branchName = result.getString("branchName");
-    return new PullRequest(repository, id, title, user, branchName);
+    return PullRequest.create()
+        .repository(result.getString("repository"))
+        .id(result.getLong("id"))
+        .title(result.getString("title"))
+        .user(result.getString("user"))
+        .branchName(result.getString("branchName"))
+        .build();
   }
 
   public Map<String, Long> countByRepo() {
