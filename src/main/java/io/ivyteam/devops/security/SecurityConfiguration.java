@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -20,18 +21,30 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(authz -> authz.requestMatchers(GitHubWebhookController.PATH).anonymous());
+    http
+        .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+        .authorizeHttpRequests(
+            authz -> {
+              authz.requestMatchers(GitHubWebhookController.PATH).anonymous();
+            })
+        .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
     super.configure(http);
+    http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
     http.oauth2Login(c -> c.loginPage("/login").permitAll());
   }
 
   @Bean
   public OAuth2AuthorizedClientManager authorizedClientManager(
-      ClientRegistrationRepository repo,
-      OAuth2AuthorizedClientService service) {
-    var provider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build();
-    var manager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(repo, service);
-    manager.setAuthorizedClientProvider(provider);
-    return manager;
+      ClientRegistrationRepository clientRegistrationRepository,
+      OAuth2AuthorizedClientService authorizedClientService) {
+
+    OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
+        .clientCredentials().build();
+
+    AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(
+        clientRegistrationRepository, authorizedClientService);
+    authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+    return authorizedClientManager;
   }
 }
