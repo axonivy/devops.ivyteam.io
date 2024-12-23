@@ -199,11 +199,13 @@ public class GitHubSynchronizer {
 
   private PullRequest toPullRequest(GHPullRequest pr) {
     try {
-      var title = pr.getTitle();
-      var user = pr.getUser().getLogin();
-      var id = pr.getNumber();
-      var p = new PullRequest(pr.getRepository().getFullName(), id, title, user, pr.getHead().getRef());
-      return p;
+      return PullRequest.create()
+          .repository(pr.getRepository().getFullName())
+          .id(pr.getNumber())
+          .title(pr.getTitle())
+          .user(pr.getUser().getLogin())
+          .branchName(pr.getHead().getRef())
+          .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

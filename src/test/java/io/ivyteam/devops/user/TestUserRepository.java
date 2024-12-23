@@ -12,8 +12,15 @@ import io.ivyteam.devops.db.Database;
 
 class TestUserRepository {
 
-  private static final User ALEX = new User("alex", "https://example.com/alex.png");
-  private static final User LOUIS = new User("louis", "https://example.com/louis.png");
+  private static final User ALEX = User.create()
+      .name("alex")
+      .avatarUrl("https://example.com/alex.png")
+      .build();
+
+  private static final User LOUIS = User.create()
+      .name("louis")
+      .avatarUrl("https://example.com/louis.png")
+      .build();
 
   @TempDir
   Path tempDir;
@@ -52,6 +59,29 @@ class TestUserRepository {
 
   @Test
   void all_empty() {
+    assertThat(users.all()).isEmpty();
+  }
+
+  @Test
+  void update() {
+    users.create(ALEX);
+    var update = UserUpdate.create("alex")
+        .avatarUrl("https://example.com/suter.png")
+        .build();
+    users.update(update);
+    var suter = User.create()
+        .name("alex")
+        .avatarUrl("https://example.com/suter.png")
+        .build();
+    assertThat(users.all()).containsExactly(suter);
+  }
+
+  @Test
+  void update_nonExisting() {
+    var update = UserUpdate.create("lukas")
+        .avatarUrl("https://example.com/alex.png")
+        .build();
+    users.update(update);
     assertThat(users.all()).isEmpty();
   }
 }

@@ -140,8 +140,13 @@ public class GitHubWebhookController {
       Organization organization) {
 
     PullRequest toPullRequest() {
-      return new PullRequest(this.repository.full_name, this.pull_request.number, this.pull_request.title,
-          this.pull_request.user.login, this.pull_request.head.ref);
+      return PullRequest.create()
+          .repository(this.repository.full_name)
+          .id(this.pull_request.number)
+          .title(this.pull_request.title)
+          .user(this.pull_request.user.login)
+          .branchName(this.pull_request.head.ref)
+          .build();
     }
   }
 
