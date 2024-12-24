@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 import org.kohsuke.github.GHBranch;
+import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
@@ -155,39 +156,34 @@ public class GitHubSynchronizer {
     }
   }
 
-  public void synch(GHRepository repo) throws IOException {
-    var name = repo.getFullName();
-    var archived = repo.isArchived();
-    var privateRepo = repo.isPrivate();
-    var licence = license(repo, "LICENSE");
-    var securityMd = license(repo, "SECURITY.md");
-    var codeOfConduct = license(repo, "CODE_OF_CONDUCT.md");
-    var gitHubPrs = repo.getPullRequests(GHIssueState.OPEN);
+  public void synch(GHRepository ghRepo) throws IOException {
+    var repo = Repo.create()
+        .name(ghRepo.getFullName())
+        .archived(ghRepo.isArchived())
+        .privateRepo(ghRepo.isPrivate())
+        .deleteBranchOnMerge(ghRepo.isDeleteBranchOnMerge())
+        .projects(ghRepo.hasProjects())
+        .issues(ghRepo.hasIssues())
+        .wiki(ghRepo.hasWiki())
+        .hooks(!ghRepo.getHooks().isEmpty())
+        .fork(ghRepo.isFork())
+        .isVulnAlertOn(ghRepo.isVulnerabilityAlertsEnabled())
+        .license(readFile(ghRepo, "LICENSE"))
+        .securityMd(readFile(ghRepo, "SECURITY.md"))
+        .codeOfConduct(readFile(ghRepo, "CODE_OF_CONDUCT.md"))
+        .build();
+    repos.create(repo);
 
-    boolean deleteBranchOnMerge = repo.isDeleteBranchOnMerge();
-    boolean projects = repo.hasProjects();
-    boolean issues = repo.hasIssues();
-    boolean wiki = repo.hasWiki();
-    boolean hooks = !repo.getHooks().isEmpty();
-    boolean fork = repo.isFork();
-    boolean isVulnAlertOn = repo.isVulnerabilityAlertsEnabled();
-
-    var ghRepo = repo;
-
-    var rr = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
-        isVulnAlertOn, licence, securityMd, codeOfConduct);
-    repos.create(rr);
-
-    gitHubPrs.stream()
+    ghRepo.getPullRequests(GHIssueState.OPEN).stream()
         .map(this::toPullRequest)
         .forEach(prs::create);
 
-    repo.getBranches().values().stream()
+    ghRepo.getBranches().values().stream()
         .map(b -> toBranch(b, ghRepo))
         .forEach(branches::create);
   }
 
-  private String license(GHRepository repo, String file) throws IOException {
+  private String readFile(GHRepository repo, String file) throws IOException {
     try {
       try (var in = repo.getFileContent(file).read()) {
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -214,16 +210,24 @@ public class GitHubSynchronizer {
   private Branch toBranch(GHBranch branch, GHRepository repo) {
     try {
       var lastCommit = repo.getCommit(branch.getSHA1());
-      var author = lastCommit.getAuthor();
-      var lastCommitAuthor = "[unknown]";
-      if (author != null) {
-        lastCommitAuthor = author.getLogin();
-      }
-      return new Branch(repo.getFullName(), branch.getName(), lastCommitAuthor, branch.isProtected(),
-          lastCommit.getAuthoredDate());
+      return Branch.create()
+          .repository(repo.getFullName())
+          .name(branch.getName())
+          .lastCommitAuthor(toLastCommitAuthor(lastCommit))
+          .protectedBranch(branch.isProtected())
+          .authoredDate(lastCommit.getAuthoredDate())
+          .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String toLastCommitAuthor(GHCommit commit) throws IOException {
+    var author = commit.getAuthor();
+    if (author != null) {
+      return author.getLogin();
+    }
+    return "[unknown]";
   }
 
   private List<GHRepository> reposFor(String orgName) {
