@@ -53,12 +53,11 @@ public class GitHubWebhookController {
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=delete")
-  public ResponseEntity<Branch> deleteBranch(@RequestBody BranchBean bean) {
+  public ResponseEntity<BranchBean> deleteBranch(@RequestBody BranchBean bean) {
     validateBean(bean);
     if ("branch".equals(bean.ref_type)) {
-      var branch = bean.toBranch();
-      branches.delete(branch);
-      return ResponseEntity.ok().body(branch);
+      branches.delete(bean.repo(), bean.name());
+      return ResponseEntity.ok().body(bean);
     }
     throw new RuntimeException("ref type not supported: " + bean.ref_type);
   }
@@ -124,12 +123,12 @@ public class GitHubWebhookController {
       Organization organization,
       String updated_at) {
 
-    Branch toBranch() {
-      var authoredDate = new Date();
-      if (this.updated_at != null) {
-        authoredDate = tsToDate(this.updated_at);
-      }
-      return new Branch(this.repository.full_name, this.ref, this.sender.login, false, authoredDate);
+    String repo() {
+      return repository.full_name;
+    }
+
+    String name() {
+      return ref;
     }
   }
 
@@ -151,11 +150,9 @@ public class GitHubWebhookController {
   }
 
   record Commit(String id, String timestamp, String url, Author author) {
-
   }
 
   record Author(String username) {
-
   }
 
   record Organization(String login) {
@@ -165,11 +162,9 @@ public class GitHubWebhookController {
   }
 
   record User(String login) {
-
   }
 
   record PrDetail(long number, String title, User user, Head head) {
-
   }
 
   record Head(String ref) {

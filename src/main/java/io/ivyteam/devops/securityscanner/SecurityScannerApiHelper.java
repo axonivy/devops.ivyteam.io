@@ -121,17 +121,23 @@ public class SecurityScannerApiHelper {
   }
 
   public void synch(ScanType scantype) throws IOException {
-    var json = SecurityScannerApiHelper.getAlerts(repo.getUrl(), token, scantype);
+    var json = getAlerts(repo.getUrl(), token, scantype);
     if (json == null) {
       return;
     }
-    var alerts = SecurityScannerApiHelper.parseAlerts(json, repo.getName(), scantype);
+    var alerts = parseAlerts(json, repo.getName(), scantype);
     if (alerts == null) {
       return;
     }
-    SecurityScanner ss = new SecurityScanner(repo.getFullName(), alerts.scantype(), alerts.critical(), alerts.high(),
-        alerts.medium(), alerts.low());
-    securityScanners.create(ss);
+    var scanner = SecurityScanner.create()
+        .repo(repo.getFullName())
+        .scantype(alerts.scantype())
+        .critical(alerts.critical())
+        .high(alerts.high())
+        .medium(alerts.medium())
+        .low(alerts.medium())
+        .build();
+    securityScanners.create(scanner);
   }
 
   private static URI toUri(URL url, String path) {
@@ -144,5 +150,4 @@ public class SecurityScannerApiHelper {
       throw new RuntimeException("Failed to build URI for dependabot alerts: " + url, ex);
     }
   }
-
 }
