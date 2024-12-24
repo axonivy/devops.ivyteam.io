@@ -32,10 +32,6 @@ public class GitHubRepoConfigurator {
       var changed = false;
       var ghRepo = gitHub.get().getRepository(repo.name());
 
-      // if (ghRepo.isPrivate()) {
-      // LOGGER.info("Skip " + repo.name() + " because it is private");
-      // return changed;
-      // }
       if (ghRepo.isArchived()) {
         LOGGER.info("Skip " + repo.name() + " because it is archived");
         return changed;
