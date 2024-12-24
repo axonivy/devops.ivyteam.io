@@ -106,13 +106,13 @@ public class GitHubWebhookController {
       boolean deleted) {
 
     Branch toBranch() {
-      // TODO louis can you fix that -> protectedBranch? not available, need to use
-      // rest api I think.
-      var shortRef = ref.replace("refs/heads/", "");
-      var authoredDate = new Date();
-      authoredDate = tsToDate(this.head_commit.timestamp);
-      var authorUserName = this.head_commit.author.username;
-      return new Branch(this.repository.full_name, shortRef, authorUserName, false, authoredDate);
+      return Branch.create()
+          .repository(this.repository.full_name)
+          .name(ref.replace("refs/heads/", ""))
+          .lastCommitAuthor(this.head_commit.author.username)
+          .protectedBranch(false)
+          .authoredDate(tsToDate(this.head_commit.timestamp))
+          .build();
     }
   }
 
