@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.repo.Repo;
-import io.ivyteam.devops.securityscanner.ScanTypeEnum;
+import io.ivyteam.devops.securityscanner.ScanType;
 import io.ivyteam.devops.securityscanner.SecurityScannerApiHelper;
 import io.ivyteam.devops.settings.SettingsManager;
 
@@ -63,7 +63,7 @@ public class GitHubRepoConfigurator {
       }
       if (!repo.isVulnAlertOn() && ghRepo.isPrivate()) {
         LOGGER.info("Enable Vulnerability-alerts");
-        SecurityScannerApiHelper.enableAlerts(ghRepo.getUrl(), gitHub.token(), ScanTypeEnum.DEPENDABOT.getValue());
+        SecurityScannerApiHelper.enableAlerts(ghRepo.getUrl(), gitHub.token(), ScanType.DEPENDABOT.getValue());
         changed = true;
       }
       if (repo.hooks()) {

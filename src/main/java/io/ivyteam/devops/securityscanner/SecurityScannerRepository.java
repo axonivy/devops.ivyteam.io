@@ -2,8 +2,7 @@ package io.ivyteam.devops.securityscanner;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -16,11 +15,22 @@ public class SecurityScannerRepository {
   @Autowired
   private Database db;
 
-  public List<SecurityScanner> all() {
+  public SecurityScannerRepository(Database db) {
+    this.db = db;
+  }
+
+  public java.util.Map<Key, SecurityScanner> all() {
     try (var connection = db.connection()) {
-      try (var stmt = connection.prepareStatement("SELECT * FROM securityscanner ORDER BY repository, scantype")) {
+      try (var stmt = connection
+          .prepareStatement("SELECT * FROM securityscanner")) {
         try (var result = stmt.executeQuery()) {
-          return getSecurityScanner(stmt.executeQuery());
+          var scanners = new HashMap<Key, SecurityScanner>();
+          while (result.next()) {
+            var scanner = toSecurityScanner(result);
+            var key = new Key(scanner.repo(), scanner.scantype());
+            scanners.put(key, scanner);
+          }
+          return scanners;
         }
       }
     } catch (SQLException ex) {
@@ -28,24 +38,7 @@ public class SecurityScannerRepository {
     }
   }
 
-  public SecurityScanner getByRepoAndScantype(String repoName, String scantype) {
-    if (repoName == null || scantype == null) {
-      return null;
-    }
-    try (var connection = db.connection()) {
-      try (var stmt = connection
-          .prepareStatement("SELECT * FROM securityscanner where repository = ? and scantype = ?")) {
-        stmt.setString(1, repoName);
-        stmt.setString(2, scantype);
-        var securityScanners = getSecurityScanner(stmt.executeQuery());
-        if (!securityScanners.isEmpty()) {
-          return securityScanners.getFirst();
-        }
-        return null;
-      }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }
+  public record Key(String repo, ScanType scantype) {
   }
 
   public void create(SecurityScanner securityScanner) {
@@ -53,14 +46,14 @@ public class SecurityScannerRepository {
       try (
           var stmt = connection.prepareStatement("DELETE FROM securityscanner WHERE repository = ? and scantype = ?")) {
         stmt.setString(1, securityScanner.repo());
-        stmt.setString(2, securityScanner.scantype());
+        stmt.setString(2, securityScanner.scantype().getValue());
         stmt.execute();
       }
 
       try (var stmt = connection.prepareStatement(
           "INSERT INTO securityscanner (repository, scantype, critical, high, medium, low) VALUES (?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, securityScanner.repo());
-        stmt.setString(2, securityScanner.scantype());
+        stmt.setString(2, securityScanner.scantype().getValue());
         stmt.setInt(3, securityScanner.critical());
         stmt.setInt(4, securityScanner.high());
         stmt.setInt(5, securityScanner.medium());
@@ -73,23 +66,14 @@ public class SecurityScannerRepository {
     }
   }
 
-  private List<SecurityScanner> getSecurityScanner(ResultSet result) {
-    var securityScanners = new ArrayList<SecurityScanner>();
-    try {
-      while (result.next()) {
-        var repository = result.getString("repository");
-        var scantype = result.getString("scantype");
-        var critical = result.getInt("critical");
-        var high = result.getInt("high");
-        var medium = result.getInt("medium");
-        var low = result.getInt("low");
-
-        var securityScanner = new SecurityScanner(repository, scantype, critical, high, medium, low);
-        securityScanners.add(securityScanner);
-      }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
-    }
-    return securityScanners;
+  private SecurityScanner toSecurityScanner(ResultSet result) throws SQLException {
+    return SecurityScanner.create()
+        .repo(result.getString("repository"))
+        .scantype(ScanType.fromValue(result.getString("scantype")))
+        .critical(result.getInt("critical"))
+        .high(result.getInt("high"))
+        .medium(result.getInt("medium"))
+        .low(result.getInt("low"))
+        .build();
   }
 }
