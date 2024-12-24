@@ -84,11 +84,11 @@ public class BranchRepository {
     }
   }
 
-  public void delete(Branch branch) {
+  public void delete(String repo, String name) {
     try (var connection = db.connection()) {
       try (var s = connection.prepareStatement("DELETE FROM branch WHERE repository = ? AND name = ?")) {
-        s.setString(1, branch.repository());
-        s.setString(2, branch.name());
+        s.setString(1, repo);
+        s.setString(2, name);
         s.execute();
       }
     } catch (SQLException ex) {

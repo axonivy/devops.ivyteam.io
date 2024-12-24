@@ -51,7 +51,7 @@ class TestBranchRepository {
   void delete() {
     repos.create(Repo.create().name("axonivy/test").build());
     branches.create(BRANCH);
-    branches.delete(BRANCH);
+    branches.delete("axonivy/test", "test-alex");
     assertThat(branches.all()).isEmpty();
   }
 
