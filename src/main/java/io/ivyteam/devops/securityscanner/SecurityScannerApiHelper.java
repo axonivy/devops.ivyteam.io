@@ -59,8 +59,8 @@ public class SecurityScannerApiHelper {
     }
   }
 
-  private static String getAlerts(URL url, String token, String scantype) {
-    var apiUrl = toUri(url, "/" + scantype + "/alerts?per_page=100");
+  private static String getAlerts(URL url, String token, ScanType scantype) {
+    var apiUrl = toUri(url, "/" + scantype.getValue() + "/alerts?per_page=100");
     try (var client = HttpClient.newHttpClient()) {
       var request = HttpRequest.newBuilder()
           .uri(apiUrl)
@@ -76,32 +76,32 @@ public class SecurityScannerApiHelper {
       if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
         return null;
       } else {
-        LOGGER.warn("get " + scantype + " is failed: " + response.statusCode() + ", api/url: " + apiUrl);
+        LOGGER.warn("get " + scantype.getValue() + " is failed: " + response.statusCode() + ", api/url: " + apiUrl);
       }
     } catch (Exception ex) {
-      LOGGER.warn("Could not get " + scantype + " alerts", ex);
+      LOGGER.warn("Could not get " + scantype.getValue() + " alerts", ex);
     }
     return null;
   }
 
-  private static SecurityScanner parseAlerts(String json, String repoName, String scantype) {
+  private static SecurityScanner parseAlerts(String json, String repoName, ScanType scantype) {
     try {
       JsonNode root = MAPPER.readTree(json);
       Map<String, Long> severityCounts = new HashMap<>();
 
-      if (scantype.equals(ScanTypeEnum.DEPENDABOT.getValue())) {
+      if (scantype.equals(ScanType.DEPENDABOT)) {
         for (JsonNode node : root) {
           if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
             severityCounts.merge(node.path("security_vulnerability").path("severity").asText(), 1L, Long::sum);
           }
         }
-      } else if (scantype.equals(ScanTypeEnum.CODE_SCANNING.getValue())) {
+      } else if (scantype.equals(ScanType.CODE_SCANNING)) {
         for (JsonNode node : root) {
           if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
             severityCounts.merge(node.path("rule").path("security_severity_level").asText(), 1L, Long::sum);
           }
         }
-      } else if (scantype.equals(ScanTypeEnum.SECRET_SCANNING.getValue())) {
+      } else if (scantype.equals(ScanType.SECRET_SCANNING)) {
         for (JsonNode node : root) {
           if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
             severityCounts.merge((node.path("url").asText() != null ? "high" : null), 1L, Long::sum);
@@ -120,7 +120,7 @@ public class SecurityScannerApiHelper {
     return null;
   }
 
-  public void synch(String scantype) throws IOException {
+  public void synch(ScanType scantype) throws IOException {
     var json = SecurityScannerApiHelper.getAlerts(repo.getUrl(), token, scantype);
     if (json == null) {
       return;

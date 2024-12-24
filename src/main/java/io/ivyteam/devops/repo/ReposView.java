@@ -20,9 +20,10 @@ import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
-import io.ivyteam.devops.securityscanner.ScanTypeEnum;
+import io.ivyteam.devops.securityscanner.ScanType;
 import io.ivyteam.devops.securityscanner.SecurityScanner;
 import io.ivyteam.devops.securityscanner.SecurityScannerRepository;
+import io.ivyteam.devops.securityscanner.SecurityScannerRepository.Key;
 import io.ivyteam.devops.view.View;
 
 @Route("")
@@ -31,6 +32,7 @@ public class ReposView extends View {
 
   public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
       SecurityScannerRepository securityscanners) {
+
     var repositories = repos.all();
     grid = new Grid<>(repositories);
     title.setText("Repositories (" + repositories.size() + ")");
@@ -69,17 +71,12 @@ public class ReposView extends View {
 
     grid
         .addComponentColumn(repo -> {
-          if (repo.archived() || repo.privateRepo()) {
-            return null;
-          }
           if (repo.license() != null) {
             var icon = createIcon(VaadinIcon.CHECK);
             icon.getElement().getThemeList().add("badge success");
             return icon;
           }
-          var icon = createIcon(VaadinIcon.CLOSE);
-          icon.getElement().getThemeList().add("badge error");
-          return icon;
+          return null;
         })
         .setHeader("License")
         .setWidth("10%")
@@ -92,6 +89,11 @@ public class ReposView extends View {
         icon.setTooltipText("Archived");
         layout.add(icon);
       }
+      return layout;
+    }).setWidth("75px");
+
+    grid.addComponentColumn(repo -> {
+      var layout = new HorizontalLayout();
       if (repo.privateRepo()) {
         var icon = createIcon(VaadinIcon.LOCK);
         icon.setTooltipText("Private");
@@ -100,43 +102,49 @@ public class ReposView extends View {
       return layout;
     }).setWidth("75px");
 
-    grid.addComponentColumn(repo -> {
-      var layout = new HorizontalLayout();
-      var dependabot = securityscanners.getByRepoAndScantype(repo.name(), ScanTypeEnum.DEPENDABOT.getValue());
-      if (dependabot != null) {
-        layout.add(createSecurityScannerAnchor(dependabot, dependabot.link_dependabot(),
-            ScanTypeEnum.DEPENDABOT.getValue()));
-      }
-      return layout;
-    }).setHeader("Dependabot").setWidth("100px").setSortable(true)
-        .setComparator(Comparator.comparing(
-            r -> getSortingNr(securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.DEPENDABOT.getValue()))));
+    var scanners = securityscanners.all();
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
-      var codeScan = securityscanners.getByRepoAndScantype(repo.name(), ScanTypeEnum.CODE_SCANNING.getValue());
-      if (codeScan != null) {
-        layout.add(
-            createSecurityScannerAnchor(codeScan, codeScan.link_codeScan(), ScanTypeEnum.CODE_SCANNING.getValue()));
+      var scanner = scanners.get(new Key(repo.name(), ScanType.DEPENDABOT));
+      if (scanner != null) {
+        layout.add(toSecurityScannerLink(scanner));
       }
       return layout;
-    }).setHeader("CodeScan").setWidth("100px").setSortable(true)
-        .setComparator(Comparator.comparing(
-            r -> getSortingNr(securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.CODE_SCANNING.getValue()))));
+    })
+        .setHeader("Dependabot")
+        .setWidth("100px")
+        .setSortable(true)
+        .setComparator(
+            Comparator.comparing(repo -> getSortingNr(scanners.get(new Key(repo.name(), ScanType.DEPENDABOT)))));
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
-      var secretScan = securityscanners.getByRepoAndScantype(repo.name(), ScanTypeEnum.SECRET_SCANNING.getValue());
-      if (secretScan != null) {
-        layout.add(
-            createSecurityScannerAnchor(secretScan, secretScan.link_secretScan(),
-                ScanTypeEnum.SECRET_SCANNING.getValue()));
+      var scanner = scanners.get(new Key(repo.name(), ScanType.CODE_SCANNING));
+      if (scanner != null) {
+        layout.add(toSecurityScannerLink(scanner));
       }
       return layout;
-    }).setHeader("SecretScan").setWidth("100px").setSortable(true)
-        .setComparator(Comparator.comparing(
-            r -> getSortingNr(
-                securityscanners.getByRepoAndScantype(r.name(), ScanTypeEnum.SECRET_SCANNING.getValue()))));
+    })
+        .setHeader("CodeScan")
+        .setWidth("100px")
+        .setSortable(true)
+        .setComparator(
+            Comparator.comparing(repo -> getSortingNr(scanners.get(new Key(repo.name(), ScanType.CODE_SCANNING)))));
+
+    grid.addComponentColumn(repo -> {
+      var layout = new HorizontalLayout();
+      var scanner = scanners.get(new Key(repo.name(), ScanType.SECRET_SCANNING));
+      if (scanner != null) {
+        layout.add(toSecurityScannerLink(scanner));
+      }
+      return layout;
+    })
+        .setHeader("SecretScan")
+        .setWidth("100px")
+        .setSortable(true)
+        .setComparator(
+            Comparator.comparing(repo -> getSortingNr(scanners.get(new Key(repo.name(), ScanType.SECRET_SCANNING)))));
 
     grid.setHeightFull();
 
@@ -218,28 +226,21 @@ public class ReposView extends View {
     if (s == null) {
       return -1;
     }
-    if (s.critical() != 0) {
-      return (int) (s.critical() + Math.pow(10, 9));
-    }
-    if (s.high() != 0) {
-      return (int) (s.high() + Math.pow(10, 6));
-    }
-    if (s.medium() != 0) {
-      return (int) (s.medium() + Math.pow(10, 3));
-    }
-    return s.low();
+    return s.sort();
   }
 
-  private Anchor createSecurityScannerAnchor(SecurityScanner ss, String link, String name) {
+  private Anchor toSecurityScannerLink(SecurityScanner ss) {
     int summary = ss.critical() + ss.high() + ss.medium() + ss.low();
-    var text = name + "->  C: " + ss.critical() + " | H: " + ss.high() + " | M: " + ss.medium() + " | L: " + ss.low();
+    var text = ss.scantype().getValue() + "->  C: " + ss.critical() + " | H: " + ss.high() + " | M: " + ss.medium()
+        + " | L: "
+        + ss.low();
 
-    Icon icon = VaadinIcon.QUESTION_CIRCLE.create();
+    var icon = VaadinIcon.QUESTION_CIRCLE.create();
     icon.setSize("14px");
     icon.setTooltipText(text);
     icon.getStyle().set("margin-left", "4px");
 
-    var a = new Anchor(link, String.valueOf(summary), AnchorTarget.BLANK);
+    var a = new Anchor(ss.link(), String.valueOf(summary), AnchorTarget.BLANK);
     a.add(icon);
 
     if (ss.critical() + ss.high() > 0) {
@@ -250,8 +251,6 @@ public class ReposView extends View {
       a.getElement().getThemeList().add("badge pill small success");
       icon.setIcon(VaadinIcon.CHECK);
     }
-
     return a;
   }
-
 }
