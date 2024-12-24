@@ -64,7 +64,7 @@ class TestSecurityScannerRepository {
     scanners.create(SCANNER_1);
     scanners.create(SCANNER_2);
     scanners.create(SCANNER_3);
-    assertThat(scanners.all()).containsExactly(
+    assertThat(scanners.all()).containsOnly(
         Map.entry(new Key("axonivy/test", ScanType.DEPENDABOT), SCANNER_1),
         Map.entry(new Key("axonivy/test", ScanType.SECRET_SCANNING), SCANNER_2),
         Map.entry(new Key("axonivy/vulnerarbilty", ScanType.SECRET_SCANNING), SCANNER_3));
