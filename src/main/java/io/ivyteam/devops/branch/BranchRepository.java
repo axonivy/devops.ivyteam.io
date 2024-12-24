@@ -25,6 +25,11 @@ public class BranchRepository {
   @Autowired
   private UserRepository users;
 
+  public BranchRepository(Database db, UserRepository users) {
+    this.db = db;
+    this.users = users;
+  }
+
   public List<Branch> all() {
     try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("SELECT * FROM branch ORDER BY lastCommitAuthor, repository")) {
