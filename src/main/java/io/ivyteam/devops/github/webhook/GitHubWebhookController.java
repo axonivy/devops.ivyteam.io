@@ -56,24 +56,24 @@ public class GitHubWebhookController {
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=delete")
-  public ResponseEntity<BranchBean> deleteBranch(@RequestBody BranchBean bean) {
+  public ResponseEntity<String> delete(@RequestBody BranchBean bean) {
     if ("branch".equals(bean.ref_type)) {
-      branches.delete(bean.repo(), bean.name());
-      return ResponseEntity.ok().body(bean);
+      branches.delete(bean.repository().full_name(), bean.ref());
+      return ResponseEntity.ok().body("DELETED");
     }
     throw new RuntimeException("ref type not supported: " + bean.ref_type);
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=pull_request")
-  public ResponseEntity<PullRequest> pr(@RequestBody PullRequestBean bean) {
+  public ResponseEntity<String> pr(@RequestBody PullRequestBean bean) {
     var pr = bean.toPullRequest();
     if ("opened".equals(bean.action)) {
       prs.create(pr);
-      return ResponseEntity.ok().body(pr);
+      return ResponseEntity.ok().body("CREATED");
     }
     if ("closed".equals(bean.action)) {
       prs.delete(pr);
-      return ResponseEntity.ok().body(pr);
+      return ResponseEntity.ok().body("DELETED");
     }
     return ResponseEntity.noContent().build();
   }
@@ -94,7 +94,6 @@ public class GitHubWebhookController {
           .repository(this.repository.full_name)
           .name(ref.replace("refs/heads/", ""))
           .lastCommitAuthor(this.head_commit.author.username)
-          .protectedBranch(false)
           .authoredDate(tsToDate(this.head_commit.timestamp))
           .build();
     }
@@ -103,17 +102,7 @@ public class GitHubWebhookController {
   record BranchBean(
       String ref,
       String ref_type,
-      Repository repository,
-      User sender,
-      String updated_at) {
-
-    String repo() {
-      return repository.full_name;
-    }
-
-    String name() {
-      return ref;
-    }
+      Repository repository) {
   }
 
   record PullRequestBean(
