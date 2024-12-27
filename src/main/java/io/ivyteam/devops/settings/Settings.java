@@ -9,8 +9,8 @@ public class Settings {
   public static final String EXCLUDED_BRANCH_PREFIXES = "excluded.branch.prefixes";
   public static final String BRANCH_PROTECTION_PREFIXES = "branch.protection.prefixes";
 
-  private String gitHubClientId = "";
-  private String gitHubClientSecret = "";
+  private String gitHubClientId = "client-id";
+  private String gitHubClientSecret = "client-secret";
   private String gitHubAppId = "";
   private String gitHubAppInstallationId = "";
   private String excludedBranchPrefixes = "";

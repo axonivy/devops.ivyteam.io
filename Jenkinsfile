@@ -24,7 +24,7 @@ pipeline {
       steps {
         script {
           docker.build('maven-build', '-f Dockerfile.maven .').inside {
-            maven cmd: "clean install -Pproduction"
+            maven cmd: "clean verify -Pit,production"
 
             if (env.BRANCH_NAME == 'master') {
               maven cmd: "org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -DincludeLicenseText=true -DoutputFormat=json"
@@ -48,7 +48,7 @@ pipeline {
           }
         }
 
-        junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/surefire-reports/**/*.xml'
+        junit testDataPublishers: [[$class: 'StabilityTestDataPublisher']], testResults: '**/target/*-reports/**/*.xml'
         recordIssues tools: [eclipse()], qualityGates: [[threshold: 1, type: 'TOTAL']]
         recordIssues tools: [mavenConsole()]
       }
