@@ -51,6 +51,20 @@ public class RepoRepository {
     }
   }
 
+  public boolean exist(String name) {
+    try (var connection = db.connection()) {
+      try (var stmt = connection.prepareStatement("SELECT COUNT(*) FROM repository WHERE name = ?")) {
+        stmt.setString(1, name);
+        try (var result = stmt.executeQuery()) {
+          result.next();
+          return result.getInt(1) > 0;
+        }
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
   public void create(Repo repo) {
     try (var connection = db.connection()) {
       try (var stmt = connection.prepareStatement("DELETE FROM repository WHERE name = ?")) {

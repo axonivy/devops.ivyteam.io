@@ -16,9 +16,10 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
-import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.repo.Repo;
+import io.ivyteam.devops.repo.RepoRepository;
 
 @RestController
 @RequestMapping(GitHubWebhookController.PATH)
@@ -28,13 +29,13 @@ public class GitHubWebhookController {
   public static final String PATH = "/github-webhook/";
 
   @Autowired
+  RepoRepository repos;
+
+  @Autowired
   BranchRepository branches;
 
   @Autowired
   PullRequestRepository prs;
-
-  @Autowired
-  GitHubProvider gitHub;
 
   @GetMapping(produces = "text/plain")
   String get() {
@@ -42,54 +43,39 @@ public class GitHubWebhookController {
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=push")
-  public ResponseEntity<Branch> push(@RequestBody PushBean bean) {
-    validateBean(bean);
+  public ResponseEntity<String> push(@RequestBody PushBean bean) {
     if (bean.deleted) {
-      return ResponseEntity.noContent().build();
+      return ResponseEntity.ok().body("DELETED");
     }
     var branch = bean.toBranch();
+    if (!repos.exist(bean.repository.full_name)) {
+      repos.create(Repo.create().name(bean.repository.full_name).build());
+    }
     branches.create(branch);
-    return ResponseEntity.ok().body(branch);
+    return ResponseEntity.ok().body("CREATED");
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=delete")
-  public ResponseEntity<BranchBean> deleteBranch(@RequestBody BranchBean bean) {
-    validateBean(bean);
+  public ResponseEntity<String> delete(@RequestBody BranchBean bean) {
     if ("branch".equals(bean.ref_type)) {
-      branches.delete(bean.repo(), bean.name());
-      return ResponseEntity.ok().body(bean);
+      branches.delete(bean.repository().full_name(), bean.ref());
+      return ResponseEntity.ok().body("DELETED");
     }
     throw new RuntimeException("ref type not supported: " + bean.ref_type);
   }
 
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, headers = "X-GitHub-Event=pull_request")
-  public ResponseEntity<PullRequest> pr(@RequestBody PullRequestBean bean) {
-    validateBean(bean);
+  public ResponseEntity<String> pr(@RequestBody PullRequestBean bean) {
     var pr = bean.toPullRequest();
     if ("opened".equals(bean.action)) {
       prs.create(pr);
-      return ResponseEntity.ok().body(pr);
+      return ResponseEntity.ok().body("CREATED");
     }
     if ("closed".equals(bean.action)) {
       prs.delete(pr);
-      return ResponseEntity.ok().body(pr);
+      return ResponseEntity.ok().body("DELETED");
     }
     return ResponseEntity.noContent().build();
-  }
-
-  private void validateBean(Object bean) {
-    switch (bean) {
-      case PushBean p -> validateOrg(p.organization);
-      case BranchBean b -> validateOrg(b.organization);
-      case PullRequestBean pr -> validateOrg(pr.organization);
-      default -> throw new RuntimeException("Invalid request body provided: " + bean);
-    }
-  }
-
-  private void validateOrg(Organization org) {
-    if (org == null || org.login == null || !org.login.equals(gitHub.org())) {
-      throw new RuntimeException("Invalid organization provided: " + org);
-    }
   }
 
   private static Date tsToDate(String timestamp) {
@@ -101,7 +87,6 @@ public class GitHubWebhookController {
       String ref,
       Repository repository,
       Commit head_commit,
-      Organization organization,
       boolean deleted) {
 
     Branch toBranch() {
@@ -109,7 +94,6 @@ public class GitHubWebhookController {
           .repository(this.repository.full_name)
           .name(ref.replace("refs/heads/", ""))
           .lastCommitAuthor(this.head_commit.author.username)
-          .protectedBranch(false)
           .authoredDate(tsToDate(this.head_commit.timestamp))
           .build();
     }
@@ -118,25 +102,13 @@ public class GitHubWebhookController {
   record BranchBean(
       String ref,
       String ref_type,
-      Repository repository,
-      User sender,
-      Organization organization,
-      String updated_at) {
-
-    String repo() {
-      return repository.full_name;
-    }
-
-    String name() {
-      return ref;
-    }
+      Repository repository) {
   }
 
   record PullRequestBean(
       String action,
       PrDetail pull_request,
-      Repository repository,
-      Organization organization) {
+      Repository repository) {
 
     PullRequest toPullRequest() {
       return PullRequest.create()
@@ -149,13 +121,10 @@ public class GitHubWebhookController {
     }
   }
 
-  record Commit(String id, String timestamp, String url, Author author) {
+  record Commit(String timestamp, Author author) {
   }
 
   record Author(String username) {
-  }
-
-  record Organization(String login) {
   }
 
   record Repository(String full_name) {
