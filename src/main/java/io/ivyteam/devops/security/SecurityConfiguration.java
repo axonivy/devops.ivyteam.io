@@ -20,13 +20,10 @@ public class SecurityConfiguration extends VaadinWebSecurity {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(
-        authz -> {
-          authz.requestMatchers(GitHubWebhookController.PATH).anonymous();
-        });
-    super.configure(http);
-    http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
+    http.authorizeHttpRequests(authz -> authz.requestMatchers(GitHubWebhookController.PATH).anonymous());
+    http.csrf(c -> c.ignoringRequestMatchers(GitHubWebhookController.PATH));
     http.oauth2Login(c -> c.loginPage("/login").permitAll());
+    super.configure(http);
   }
 
   @Bean
