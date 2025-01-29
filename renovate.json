@@ -1,7 +1,15 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-      "config:base"
-    ],
-    "assignees": ["alexsuter"]
-  }
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>axonivy/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "automerge": true,
+      "matchDepTypes": [
+        "test"
+      ]
+    }
+  ]
+}
+
