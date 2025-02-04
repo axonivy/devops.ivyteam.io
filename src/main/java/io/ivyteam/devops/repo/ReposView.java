@@ -28,6 +28,7 @@ import io.ivyteam.devops.view.View;
 
 @Route("")
 public class ReposView extends View {
+
   private final Grid<Repo> grid;
 
   public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
@@ -35,11 +36,16 @@ public class ReposView extends View {
 
     var repositories = repos.all();
     grid = new Grid<>(repositories);
-    title.setText("Repositories (" + repositories.size() + ")");
+
+    grid.addComponentColumn(p -> {
+      var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
+      return new Anchor(p.gitHubLink(), icon);
+    })
+        .setWidth("10px");
 
     grid.addComponentColumn(p -> new Anchor(p.link(), p.name()))
         .setHeader("Name")
-        .setWidth("40%")
+        .setWidth("35%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
@@ -52,7 +58,7 @@ public class ReposView extends View {
           return counter;
         })
         .setHeader("PRs")
-        .setWidth("10%")
+        .setWidth("8%")
         .setSortable(true)
         .setComparator(Comparator.comparing(repo -> prCount.getOrDefault(repo.name(), 0L)));
 
@@ -65,7 +71,7 @@ public class ReposView extends View {
           return counter;
         })
         .setHeader("Branches")
-        .setWidth("10%")
+        .setWidth("8%")
         .setSortable(true)
         .setComparator(Comparator.comparing(repo -> branchCount.getOrDefault(repo.name(), 0L)));
 
@@ -79,7 +85,7 @@ public class ReposView extends View {
           return null;
         })
         .setHeader("License")
-        .setWidth("10%")
+        .setWidth("8%")
         .setSortable(true);
 
     grid.addComponentColumn(repo -> {
@@ -154,6 +160,8 @@ public class ReposView extends View {
     layout.add(inputLayout);
     layout.add(grid);
 
+    updateTitle(grid.getListDataView());
+
     setContent(layout);
   }
 
@@ -163,14 +171,20 @@ public class ReposView extends View {
     search.setPlaceholder("Search");
     search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
     search.setValueChangeMode(ValueChangeMode.EAGER);
-    search.addValueChangeListener(e -> dataView.refreshAll());
+    search.addValueChangeListener(e -> {
+      dataView.refreshAll();
+      updateTitle(dataView);
+    });
     dataView.addFilter(new SearchFilter(search));
 
     var checkboxArchived = new Checkbox();
     checkboxArchived.setWidthFull();
     checkboxArchived.getStyle().set("max-width", "20%");
     checkboxArchived.setLabel("Include archived");
-    checkboxArchived.addValueChangeListener(e -> dataView.refreshAll());
+    checkboxArchived.addValueChangeListener(e -> {
+      dataView.refreshAll();
+      updateTitle(dataView);
+    });
     dataView.addFilter(new RepoFilter(checkboxArchived));
 
     var inputLayout = new HorizontalLayout();
@@ -184,6 +198,10 @@ public class ReposView extends View {
     var icon = vaadinIcon.create();
     icon.getStyle().set("padding", "var(--lumo-space-xs");
     return icon;
+  }
+
+  private void updateTitle(GridListDataView<Repo> dataView) {
+    title.setText("Repositories (" + dataView.getItemCount() + ")");
   }
 
   private static class RepoFilter implements SerializablePredicate<Repo> {
