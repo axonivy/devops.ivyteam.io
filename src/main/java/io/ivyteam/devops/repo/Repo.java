@@ -19,6 +19,10 @@ public record Repo(
     return "/repository/" + name;
   }
 
+  public String gitHubLink() {
+    return "https://github.com/" + name;
+  }
+
   public static Builder create() {
     return new Builder();
   }
