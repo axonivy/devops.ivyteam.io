@@ -17,7 +17,9 @@ CREATE TABLE repository (
     isVulnAlertOn INTEGER NOT NULL,
     license TEXT NULL,
     securityMd TEXT NULL,
-    codeOfConduct TEXT NULL
+    codeOfConduct TEXT NULL,
+    renovateJson TEXT NULL,
+    renovateValid INTEGER NOT NULL
 );
 
 CREATE TABLE pull_request (

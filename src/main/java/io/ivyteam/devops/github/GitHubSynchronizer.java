@@ -157,6 +157,7 @@ public class GitHubSynchronizer {
   }
 
   public void synch(GHRepository ghRepo) throws IOException {
+    var renovateJson = readFile(ghRepo, "renovate.json", ".github/renovate.json");
     var repo = Repo.create()
         .name(ghRepo.getFullName())
         .archived(ghRepo.isArchived())
@@ -170,7 +171,8 @@ public class GitHubSynchronizer {
         .isVulnAlertOn(ghRepo.isVulnerabilityAlertsEnabled())
         .license(readFile(ghRepo, "LICENSE"))
         .securityMd(readFile(ghRepo, "SECURITY.md"))
-        .codeOfConduct(readFile(ghRepo, "CODE_OF_CONDUCT.md"))
+        .renovateJson(renovateJson)
+        .renovateValid(renovateJson != null && renovateJson.contains("local>axonivy/renovate-config"))
         .build();
     repos.create(repo);
 
@@ -190,6 +192,20 @@ public class GitHubSynchronizer {
       }
     } catch (GHFileNotFoundException e) {
       return null;
+    }
+  }
+
+  private String readFile(GHRepository repo, String file, String fallBackFile) throws IOException {
+    try {
+      try (var in = repo.getFileContent(file).read()) {
+        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+      }
+    } catch (GHFileNotFoundException e) {
+      try (var in = repo.getFileContent(fallBackFile).read()) {
+        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+      } catch (GHFileNotFoundException ex) {
+        return null;
+      }
     }
   }
 

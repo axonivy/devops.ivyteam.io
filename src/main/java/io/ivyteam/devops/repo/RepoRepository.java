@@ -31,6 +31,7 @@ public class RepoRepository {
             var license = result.getString("license");
             var securityMd = result.getString("securityMd");
             var codeOfConduct = result.getString("codeOfConduct");
+            var renovateJson = result.getString("renovateJson");
             var deleteBranchOnMerge = result.getInt("deleteBranchOnMerge") == 1;
             var projects = result.getInt("projects") == 1;
             var issues = result.getInt("issues") == 1;
@@ -38,9 +39,10 @@ public class RepoRepository {
             var hooks = result.getInt("hooks") == 1;
             var fork = result.getInt("fork") == 1;
             var isVulnAlertOn = result.getInt("isVulnAlertOn") == 1;
+            var isRenovateValid = result.getInt("renovateValid") == 1;
 
             var repo = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
-                isVulnAlertOn, license, securityMd, codeOfConduct);
+                isVulnAlertOn, license, securityMd, codeOfConduct, renovateJson, isRenovateValid);
             repos.add(repo);
           }
           return repos;
@@ -73,7 +75,7 @@ public class RepoRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, isVulnAlertOn, license, securityMd, codeOfConduct) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, isVulnAlertOn, license, securityMd, codeOfConduct, renovateJson, renovateValid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
         stmt.setInt(2, repo.archived() ? 1 : 0);
         stmt.setInt(3, repo.privateRepo() ? 1 : 0);
@@ -87,6 +89,8 @@ public class RepoRepository {
         stmt.setString(11, repo.license());
         stmt.setString(12, repo.securityMd());
         stmt.setString(13, repo.codeOfConduct());
+        stmt.setString(14, repo.renovateJson());
+        stmt.setInt(15, repo.renovateValid() ? 1 : 0);
 
         stmt.execute();
       }
