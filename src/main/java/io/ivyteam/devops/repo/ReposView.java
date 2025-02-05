@@ -80,8 +80,7 @@ public class ReposView extends View {
           return null;
         })
         .setHeader("License")
-        .setWidth("5%")
-        .setSortable(true);
+        .setWidth("5%");
 
     grid
         .addComponentColumn(repo -> {
@@ -93,8 +92,7 @@ public class ReposView extends View {
           return null;
         })
         .setHeader("Renovate")
-        .setWidth("5%")
-        .setSortable(true);
+        .setWidth("5%");
 
     grid.addComponentColumn(repo -> {
       var layout = new HorizontalLayout();
