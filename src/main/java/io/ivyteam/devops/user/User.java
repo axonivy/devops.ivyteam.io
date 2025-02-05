@@ -6,6 +6,10 @@ public record User(String name, String avatarUrl) {
     return "/users/" + name;
   }
 
+  public String ghLink() {
+    return "https://github.com/" + name;
+  }
+
   public static Builder create() {
     return new Builder();
   }

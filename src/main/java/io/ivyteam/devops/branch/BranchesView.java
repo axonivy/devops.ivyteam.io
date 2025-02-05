@@ -1,5 +1,6 @@
 package io.ivyteam.devops.branch;
 
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 
@@ -11,9 +12,13 @@ public class BranchesView extends View {
 
   public BranchesView(BranchRepository branches, PullRequestRepository prRepo) {
     var allBranches = branches.all();
-    title.setText("Branches (" + allBranches.size() + ")");
     var routeParameters = new RouteParameters();
-    var component = new BranchGrid(allBranches, prRepo, BranchesView.class, routeParameters).create();
+    var component = new BranchGrid(allBranches, prRepo, BranchesView.class, routeParameters, this::updateTitle)
+        .create();
     setContent(component);
+  }
+
+  private void updateTitle(GridListDataView<?> dataView) {
+    title.setText("Branches (" + dataView.getItemCount() + ")");
   }
 }

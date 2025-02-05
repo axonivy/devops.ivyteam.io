@@ -2,7 +2,14 @@ package io.ivyteam.devops.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.BeforeEvent;
@@ -26,27 +33,55 @@ public class UserView extends View implements HasUrlParameter<String> {
   @Autowired
   PullRequestRepository pullRequests;
 
+  private Span prCounter = new Span();
+  private Span branchCounter = new Span();
+
   @Override
   public void setParameter(BeforeEvent event, String user) {
+    prCounter = new Span();
     title.setText(user);
 
     var tabSheet = new TabSheet();
     tabSheet.setSizeFull();
 
     var allPrs = pullRequests.findByUser(user);
-    var prCounter = new Span("Pull Requests (" + allPrs.size() + ")");
     var tabPrs = new Tab(prCounter);
-    var gridPrs = PullRequestGrid.create(allPrs);
+    var gridPrs = PullRequestGrid.create(allPrs, this::updatePrTitle);
     tabSheet.add(tabPrs, gridPrs);
 
     var allBranches = branches.findByUser(user);
-    var branchCounter = new Span("Branches (" + allBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
 
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, user);
-    var gridBranches = new BranchGrid(allBranches, pullRequests, UserView.class, routeParameters).create();
+    var gridBranches = new BranchGrid(allBranches, pullRequests, UserView.class, routeParameters,
+        this::updateBranchTitle).create();
     tabSheet.add(tabBranches, gridBranches);
-
     setContent(tabSheet);
+  }
+
+  private void updatePrTitle(GridListDataView<?> dataView) {
+    prCounter.setText("Pull Requests (" + dataView.getItemCount() + ")");
+  }
+
+  private void updateBranchTitle(GridListDataView<?> dataView) {
+    branchCounter.setText("Branches (" + dataView.getItemCount() + ")");
+  }
+
+  public static Component userLink(User user) {
+    var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
+    var layout = new HorizontalLayout();
+    layout.add(new Anchor(user.link(), user.name()));
+    layout.add(new Anchor(user.ghLink(), icon));
+    layout.setSpacing(false);
+    layout.setAlignItems(Alignment.CENTER);
+    return layout;
+  }
+
+  private static Icon createIcon(VaadinIcon vaadinIcon) {
+    var icon = vaadinIcon.create();
+    icon.getStyle().set("padding", "0.25em");
+    icon.getStyle().set("margin-bottom", "2px");
+    icon.setSize("var(--lumo-icon-size-s)");
+    return icon;
   }
 }

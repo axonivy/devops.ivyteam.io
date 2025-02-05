@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -23,8 +24,11 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
 
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.repo.Repo;
+import io.ivyteam.devops.repo.ReposView;
 import io.ivyteam.devops.settings.SettingsManager;
 import io.ivyteam.devops.user.User;
+import io.ivyteam.devops.user.UserView;
 
 public class BranchGrid {
 
@@ -35,16 +39,18 @@ public class BranchGrid {
   private final List<Branch> branches;
   private final Class<? extends Component> navigationTarget;
   private final RouteParameters routeParameters;
+  private final Consumer<GridListDataView<?>> update;
   private String searchValue = "";
   private String excludedPrefixes = "";
   private PullRequestRepository prRepo;
 
   public BranchGrid(List<Branch> branches, PullRequestRepository prRepo, Class<? extends Component> navigationTarget,
-      RouteParameters routeParameters) {
+      RouteParameters routeParameters, Consumer<GridListDataView<?>> update) {
     this.branches = branches;
     this.prRepo = prRepo;
     this.navigationTarget = navigationTarget;
     this.routeParameters = routeParameters;
+    this.update = update;
   }
 
   public Component create() {
@@ -53,14 +59,13 @@ public class BranchGrid {
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
-    grid.addComponentColumn(
-        branch -> new Anchor(new User(branch.lastCommitAuthor(), "").link(), branch.lastCommitAuthor()))
+    grid.addComponentColumn(branch -> UserView.userLink(new User(branch.lastCommitAuthor(), "")))
         .setHeader("Author")
         .setWidth("10%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Branch::lastCommitAuthor));
 
-    grid.addComponentColumn(branch -> new Anchor(branch.repoLink(), branch.repository()))
+    grid.addComponentColumn(branch -> ReposView.repoLink(Repo.create().name(branch.repository()).build()))
         .setHeader("Repository")
         .setWidth("20%")
         .setSortable(true)
@@ -114,7 +119,7 @@ public class BranchGrid {
       layout.add(inputLayout);
       layout.add(grid);
     });
-
+    update.accept(grid.getListDataView());
     return layout;
   }
 
@@ -130,6 +135,7 @@ public class BranchGrid {
       updateQueryParams();
       dataView.refreshAll();
     });
+    search.addValueChangeListener(e -> update.accept(dataView));
 
     var excludedBranchPrefixes = new TextField();
     excludedBranchPrefixes.setWidth("70%");
@@ -140,6 +146,7 @@ public class BranchGrid {
       updateQueryParams();
       dataView.refreshAll();
     });
+    excludedBranchPrefixes.addValueChangeListener(e -> update.accept(dataView));
     excludedBranchPrefixes.setValue(excludedPrefixes);
     dataView.addFilter(new SearchFilter(search));
     dataView.addFilter(new ExcludedBranchesFilter(excludedBranchPrefixes));

@@ -11,6 +11,7 @@ import com.vaadin.flow.component.html.AnchorTarget;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -37,15 +38,9 @@ public class ReposView extends View {
     var repositories = repos.all();
     grid = new Grid<>(repositories);
 
-    grid.addComponentColumn(p -> {
-      var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
-      return new Anchor(p.gitHubLink(), icon);
-    })
-        .setWidth("10px");
-
-    grid.addComponentColumn(p -> new Anchor(p.link(), p.name()))
+    grid.addComponentColumn(ReposView::repoLink)
         .setHeader("Name")
-        .setWidth("35%")
+        .setWidth("40%")
         .setSortable(true)
         .setComparator(Comparator.comparing(Repo::name));
 
@@ -171,32 +166,31 @@ public class ReposView extends View {
     search.setPlaceholder("Search");
     search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
     search.setValueChangeMode(ValueChangeMode.EAGER);
-    search.addValueChangeListener(e -> {
-      dataView.refreshAll();
-      updateTitle(dataView);
-    });
+    search.addValueChangeListener(e -> dataView.refreshAll());
+    search.addValueChangeListener(e -> updateTitle(dataView));
     dataView.addFilter(new SearchFilter(search));
 
     var checkboxArchived = new Checkbox();
     checkboxArchived.setWidthFull();
     checkboxArchived.getStyle().set("max-width", "20%");
     checkboxArchived.setLabel("Include archived");
-    checkboxArchived.addValueChangeListener(e -> {
-      dataView.refreshAll();
-      updateTitle(dataView);
-    });
+    checkboxArchived.addValueChangeListener(e -> dataView.refreshAll());
+    checkboxArchived.addValueChangeListener(e -> updateTitle(dataView));
     dataView.addFilter(new RepoFilter(checkboxArchived));
 
-    var inputLayout = new HorizontalLayout();
-    inputLayout.setWidthFull();
-    inputLayout.add(search);
-    inputLayout.add(checkboxArchived);
-    return inputLayout;
+    var layout = new HorizontalLayout();
+    layout.setWidthFull();
+    layout.setAlignItems(Alignment.CENTER);
+    layout.add(search);
+    layout.add(checkboxArchived);
+    return layout;
   }
 
-  private Icon createIcon(VaadinIcon vaadinIcon) {
+  private static Icon createIcon(VaadinIcon vaadinIcon) {
     var icon = vaadinIcon.create();
-    icon.getStyle().set("padding", "var(--lumo-space-xs");
+    icon.getStyle().set("padding", "0.25em");
+    icon.getStyle().set("margin-bottom", "2px");
+    icon.setSize("var(--lumo-icon-size-s)");
     return icon;
   }
 
@@ -270,5 +264,15 @@ public class ReposView extends View {
       icon.setIcon(VaadinIcon.CHECK);
     }
     return a;
+  }
+
+  public static Component repoLink(Repo repo) {
+    var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
+    var layout = new HorizontalLayout();
+    layout.add(new Anchor(repo.link(), repo.name()));
+    layout.add(new Anchor(repo.gitHubLink(), icon));
+    layout.setSpacing(false);
+    layout.setAlignItems(Alignment.CENTER);
+    return layout;
   }
 }

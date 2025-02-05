@@ -1,5 +1,6 @@
 package io.ivyteam.devops.pullrequest;
 
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.view.View;
@@ -8,9 +9,11 @@ import io.ivyteam.devops.view.View;
 public class PullRequestsView extends View {
 
   public PullRequestsView(PullRequestRepository prs) {
-    var allPrs = prs.all();
-    title.setText("Pull Requests (" + allPrs.size() + ")");
-    var gridPrs = PullRequestGrid.create(allPrs);
-    setContent(gridPrs);
+    var grid = PullRequestGrid.create(prs.all(), this::updateTitle);
+    setContent(grid);
+  }
+
+  private void updateTitle(GridListDataView<?> dataView) {
+    title.setText("Pull Requests (" + dataView.getItemCount() + ")");
   }
 }

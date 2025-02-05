@@ -65,14 +65,16 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var repoPrs = pullRequests.findByRepository(repo.name());
     var prCounter = new Span("Pull Requests (" + repoPrs.size() + ")");
     var tabPrs = new Tab(prCounter);
-    var gridPrs = PullRequestGrid.create(repoPrs);
+    var gridPrs = PullRequestGrid.create(repoPrs, data -> {
+    });
     tabSheet.add(tabPrs, gridPrs);
 
     var repoBranches = branches.findByRepo(repo.name());
     var branchCounter = new Span("Branches (" + repoBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, parameter);
-    var gridBranches = new BranchGrid(repoBranches, pullRequests, RepoView.class, routeParameters).create();
+    var gridBranches = new BranchGrid(repoBranches, pullRequests, RepoView.class, routeParameters, data -> {
+    }).create();
     tabSheet.add(tabBranches, gridBranches);
 
     var tabJobs = new Tab("Jobs");
