@@ -150,6 +150,9 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var tabCodeOfConduct = new Tab("CODE_OF_CONDUCT.md");
     tabSheet.add(tabCodeOfConduct, createTextArea(repo.codeOfConduct()));
 
+    var tabRenovateJson = new Tab("renovate.json");
+    tabSheet.add(tabRenovateJson, createTextArea(repo.renovateJson()));
+
     tabSheet.setSizeFull();
     formLayout.add(tabSheet);
 

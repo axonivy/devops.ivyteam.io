@@ -53,7 +53,7 @@ public class ReposView extends View {
           return counter;
         })
         .setHeader("PRs")
-        .setWidth("8%")
+        .setWidth("5%")
         .setSortable(true)
         .setComparator(Comparator.comparing(repo -> prCount.getOrDefault(repo.name(), 0L)));
 
@@ -66,7 +66,7 @@ public class ReposView extends View {
           return counter;
         })
         .setHeader("Branches")
-        .setWidth("8%")
+        .setWidth("5%")
         .setSortable(true)
         .setComparator(Comparator.comparing(repo -> branchCount.getOrDefault(repo.name(), 0L)));
 
@@ -80,7 +80,20 @@ public class ReposView extends View {
           return null;
         })
         .setHeader("License")
-        .setWidth("8%")
+        .setWidth("5%")
+        .setSortable(true);
+
+    grid
+        .addComponentColumn(repo -> {
+          if (repo.renovateValid()) {
+            var icon = createIcon(VaadinIcon.CHECK);
+            icon.getElement().getThemeList().add("badge success");
+            return icon;
+          }
+          return null;
+        })
+        .setHeader("Renovate")
+        .setWidth("5%")
         .setSortable(true);
 
     grid.addComponentColumn(repo -> {

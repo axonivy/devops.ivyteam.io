@@ -13,7 +13,9 @@ public record Repo(
     boolean isVulnAlertOn,
     String license,
     String securityMd,
-    String codeOfConduct) {
+    String codeOfConduct,
+    String renovateJson,
+    boolean renovateValid) {
 
   public String link() {
     return "/repository/" + name;
@@ -42,6 +44,8 @@ public record Repo(
     private String license;
     private String securityMd;
     private String codeOfConduct;
+    private String renovateJson;
+    private boolean renovateValid;
 
     public Builder name(String name) {
       this.name = name;
@@ -108,9 +112,19 @@ public record Repo(
       return this;
     }
 
+    public Builder renovateJson(String renovateJson) {
+      this.renovateJson = renovateJson;
+      return this;
+    }
+
+    public Builder renovateValid(boolean renovateValid) {
+      this.renovateValid = renovateValid;
+      return this;
+    }
+
     public Repo build() {
       return new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
-          isVulnAlertOn, license, securityMd, codeOfConduct);
+          isVulnAlertOn, license, securityMd, codeOfConduct, renovateJson, renovateValid);
     }
   }
 }
