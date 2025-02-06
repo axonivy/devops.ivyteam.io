@@ -33,6 +33,9 @@ public class UserView extends View implements HasUrlParameter<String> {
   @Autowired
   PullRequestRepository pullRequests;
 
+  @Autowired
+  private UserRepository users;
+
   private Span prCounter = new Span();
   private Span branchCounter = new Span();
 
@@ -46,7 +49,8 @@ public class UserView extends View implements HasUrlParameter<String> {
 
     var allPrs = pullRequests.findByUser(user);
     var tabPrs = new Tab(prCounter);
-    var gridPrs = PullRequestGrid.create(allPrs, this::updatePrTitle);
+    var userCache = new UserCache(users.all());
+    var gridPrs = PullRequestGrid.create(allPrs, this::updatePrTitle, userCache);
     tabSheet.add(tabPrs, gridPrs);
 
     var allBranches = branches.findByUser(user);
@@ -54,7 +58,7 @@ public class UserView extends View implements HasUrlParameter<String> {
 
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, user);
     var gridBranches = new BranchGrid(allBranches, pullRequests, UserView.class, routeParameters,
-        this::updateBranchTitle).create();
+        this::updateBranchTitle, userCache).create();
     tabSheet.add(tabBranches, gridBranches);
     setContent(tabSheet);
   }

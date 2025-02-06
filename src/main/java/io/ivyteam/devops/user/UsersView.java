@@ -4,10 +4,12 @@ import java.util.Comparator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.Route;
 
@@ -24,7 +26,7 @@ public class UsersView extends View {
     grid.setSizeFull();
 
     grid
-        .addComponentColumn(user -> new AvatarLinkComponent(user))
+        .addComponentColumn(AvatarLinkComponent::new)
         .setHeader("Name")
         .setWidth("100%")
         .setSortable(true)
@@ -33,15 +35,35 @@ public class UsersView extends View {
     setContent(grid);
   }
 
-  public class AvatarLinkComponent extends HorizontalLayout {
+  public static Component avatar(User user) {
+    if (user == null) {
+      return null;
+    }
+    return new AvatarLinkComponent(user);
+  }
+
+  public static class AvatarLinkComponent extends HorizontalLayout {
 
     public AvatarLinkComponent(User user) {
+      var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
       var avatar = new Avatar(user.name());
       avatar.setImage(user.avatarUrl());
-      var link = new Anchor(user.link(), user.name());
-      add(avatar, link);
-      setSpacing(true);
-      setAlignItems(FlexComponent.Alignment.CENTER);
+      avatar.setWidth("30px");
+      avatar.setHeight("30px");
+      add(avatar);
+      add(new Anchor(user.link(), user.name()));
+      add(new Anchor(user.ghLink(), icon));
+      setAlignItems(Alignment.CENTER);
+      setSpacing(false);
+      getThemeList().add("spacing-xs");
     }
+  }
+
+  private static Icon createIcon(VaadinIcon vaadinIcon) {
+    var icon = vaadinIcon.create();
+    icon.getStyle().set("padding", "0.25em");
+    icon.getStyle().set("margin-bottom", "2px");
+    icon.setSize("var(--lumo-icon-size-s)");
+    return icon;
   }
 }

@@ -19,12 +19,12 @@ import com.vaadin.flow.function.SerializablePredicate;
 
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.ReposView;
-import io.ivyteam.devops.user.User;
-import io.ivyteam.devops.user.UserView;
+import io.ivyteam.devops.user.UserCache;
+import io.ivyteam.devops.user.UsersView;
 
 public class PullRequestGrid {
 
-  public static Component create(List<PullRequest> prs, Consumer<GridListDataView<?>> update) {
+  public static Component create(List<PullRequest> prs, Consumer<GridListDataView<?>> update, UserCache userCache) {
     var grid = new Grid<>(prs);
     grid.setSizeFull();
 
@@ -49,7 +49,7 @@ public class PullRequestGrid {
         .setComparator(Comparator.comparing(pr -> pr.repository()));
 
     grid
-        .addComponentColumn(pr -> UserView.userLink(new User(pr.user(), "")))
+        .addComponentColumn(pr -> UsersView.avatar(userCache.get(pr.user())))
         .setHeader("User")
         .setWidth("20%")
         .setSortable(true)
