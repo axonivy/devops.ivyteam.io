@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import io.ivyteam.devops.branch.Branch;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.file.File;
+import io.ivyteam.devops.file.FileRepository;
 import io.ivyteam.devops.pullrequest.PullRequest;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
@@ -36,6 +38,9 @@ public class GitHubSynchronizer {
 
   @Autowired
   private RepoRepository repos;
+
+  @Autowired
+  private FileRepository files;
 
   @Autowired
   private PullRequestRepository prs;
@@ -157,7 +162,6 @@ public class GitHubSynchronizer {
   }
 
   public void synch(GHRepository ghRepo) throws IOException {
-    var renovateJson = readFile(ghRepo, "renovate.json", ".github/renovate.json");
     var repo = Repo.create()
         .name(ghRepo.getFullName())
         .archived(ghRepo.isArchived())
@@ -169,12 +173,17 @@ public class GitHubSynchronizer {
         .hooks(!ghRepo.getHooks().isEmpty())
         .fork(ghRepo.isFork())
         .isVulnAlertOn(ghRepo.isVulnerabilityAlertsEnabled())
-        .license(readFile(ghRepo, "LICENSE"))
-        .securityMd(readFile(ghRepo, "SECURITY.md"))
-        .renovateJson(renovateJson)
-        .renovateValid(renovateJson != null && renovateJson.contains("local>axonivy/renovate-config"))
         .build();
     repos.create(repo);
+
+    for (var f : List.of("LICENSE", "SECURITY.md", "CODE_OF_CONDUCT.md", "renovate.json", ".github/renovate.json")) {
+      var file = File.create()
+          .repository(repo.name())
+          .path(f)
+          .content(readFile(ghRepo, f))
+          .build();
+      files.create(file);
+    }
 
     ghRepo.getPullRequests(GHIssueState.OPEN).stream()
         .map(this::toPullRequest)

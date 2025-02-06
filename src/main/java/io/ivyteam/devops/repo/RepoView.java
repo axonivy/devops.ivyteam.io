@@ -1,6 +1,7 @@
 package io.ivyteam.devops.repo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -10,6 +11,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -23,11 +25,13 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 import io.ivyteam.devops.branch.BranchGrid;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.file.FileRepository;
 import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.github.GitHubRepoConfigurator;
 import io.ivyteam.devops.github.GitHubSynchronizer;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.repo.check.RepoCheck;
 import io.ivyteam.devops.user.UserCache;
 import io.ivyteam.devops.user.UserRepository;
 import io.ivyteam.devops.view.View;
@@ -43,6 +47,9 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
   @Autowired
   private BranchRepository branches;
+
+  @Autowired
+  private FileRepository files;
 
   @Autowired
   private PullRequestRepository pullRequests;
@@ -82,6 +89,10 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var gridBranches = new BranchGrid(repoBranches, pullRequests, RepoView.class, routeParameters, data -> {
     }, userCache).create();
     tabSheet.add(tabBranches, gridBranches);
+
+    var tabChecks = new Tab("Checks");
+    var checks = createChecks(repo);
+    tabSheet.add(tabChecks, checks);
 
     var tabJobs = new Tab("Jobs");
     var jobs = createJobs(repo);
@@ -147,22 +158,40 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
     var tabSheet = new TabSheet();
 
-    var tabLicense = new Tab("LICENSE");
-    tabSheet.add(tabLicense, createTextArea(repo.license()));
-
-    var tabSecurityMd = new Tab("SECURITY.md");
-    tabSheet.add(tabSecurityMd, createTextArea(repo.securityMd()));
-
-    var tabCodeOfConduct = new Tab("CODE_OF_CONDUCT.md");
-    tabSheet.add(tabCodeOfConduct, createTextArea(repo.codeOfConduct()));
-
-    var tabRenovateJson = new Tab("renovate.json");
-    tabSheet.add(tabRenovateJson, createTextArea(repo.renovateJson()));
+    for (var file : files.all(repo)) {
+      var tab = new Tab(file.path());
+      tabSheet.add(tab, createTextArea(file.content()));
+    }
 
     tabSheet.setSizeFull();
     formLayout.add(tabSheet);
 
     return formLayout;
+  }
+
+  private Component createChecks(Repo repo) {
+    var layout = new FormLayout();
+
+    var items = new ArrayList<String>();
+    var select = new ArrayList<String>();
+
+    for (var check : RepoCheck.all()) {
+      var error = check.check(repo);
+      if (error == null) {
+        select.add(check.name());
+        items.add(check.name());
+      } else {
+        items.add(error);
+      }
+    }
+
+    var listBox = new MultiSelectListBox<String>();
+    listBox.setItems(items);
+    listBox.select(select);
+    listBox.setReadOnly(true);
+    layout.add(listBox);
+
+    return layout;
   }
 
   private Component createJobs(Repo repo) {
