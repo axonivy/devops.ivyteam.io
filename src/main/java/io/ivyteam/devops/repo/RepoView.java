@@ -28,6 +28,8 @@ import io.ivyteam.devops.github.GitHubRepoConfigurator;
 import io.ivyteam.devops.github.GitHubSynchronizer;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.user.UserCache;
+import io.ivyteam.devops.user.UserRepository;
 import io.ivyteam.devops.view.View;
 
 @Route("/repository")
@@ -46,6 +48,9 @@ public class RepoView extends View implements HasUrlParameter<String> {
   private PullRequestRepository pullRequests;
 
   @Autowired
+  private UserRepository users;
+
+  @Autowired
   private GitHubSynchronizer synchronizer;
 
   @Override
@@ -62,11 +67,12 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var tabDetail = new Tab("Details");
     tabSheet.add(tabDetail, createDetail(repo));
 
+    var userCache = new UserCache(users.all());
     var repoPrs = pullRequests.findByRepository(repo.name());
     var prCounter = new Span("Pull Requests (" + repoPrs.size() + ")");
     var tabPrs = new Tab(prCounter);
     var gridPrs = PullRequestGrid.create(repoPrs, data -> {
-    });
+    }, userCache);
     tabSheet.add(tabPrs, gridPrs);
 
     var repoBranches = branches.findByRepo(repo.name());
@@ -74,7 +80,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var tabBranches = new Tab(branchCounter);
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, parameter);
     var gridBranches = new BranchGrid(repoBranches, pullRequests, RepoView.class, routeParameters, data -> {
-    }).create();
+    }, userCache).create();
     tabSheet.add(tabBranches, gridBranches);
 
     var tabJobs = new Tab("Jobs");

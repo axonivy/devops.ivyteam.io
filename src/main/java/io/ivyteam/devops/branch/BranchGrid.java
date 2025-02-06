@@ -27,8 +27,8 @@ import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.ReposView;
 import io.ivyteam.devops.settings.SettingsManager;
-import io.ivyteam.devops.user.User;
-import io.ivyteam.devops.user.UserView;
+import io.ivyteam.devops.user.UserCache;
+import io.ivyteam.devops.user.UsersView;
 
 public class BranchGrid {
 
@@ -43,14 +43,16 @@ public class BranchGrid {
   private String searchValue = "";
   private String excludedPrefixes = "";
   private PullRequestRepository prRepo;
+  private UserCache userCache;
 
   public BranchGrid(List<Branch> branches, PullRequestRepository prRepo, Class<? extends Component> navigationTarget,
-      RouteParameters routeParameters, Consumer<GridListDataView<?>> update) {
+      RouteParameters routeParameters, Consumer<GridListDataView<?>> update, UserCache userCache) {
     this.branches = branches;
     this.prRepo = prRepo;
     this.navigationTarget = navigationTarget;
     this.routeParameters = routeParameters;
     this.update = update;
+    this.userCache = userCache;
   }
 
   public Component create() {
@@ -59,7 +61,7 @@ public class BranchGrid {
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
-    grid.addComponentColumn(branch -> UserView.userLink(new User(branch.lastCommitAuthor(), "")))
+    grid.addComponentColumn(branch -> UsersView.avatar(userCache.get(branch.lastCommitAuthor())))
         .setHeader("Author")
         .setWidth("10%")
         .setSortable(true)
