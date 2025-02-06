@@ -25,9 +25,12 @@ class LicenseRepoCheck implements RepoCheck {
       return null;
     }
     var file = files.byPath(repo, "LICENSE");
+    if (file == null) {
+      return "LICENSE file is missing";
+    }
     var content = file.content();
     if (content == null || content.isEmpty()) {
-      return "LICENSE is missing";
+      return "Content of LICENSE file is empty";
     }
     return null;
   }

@@ -177,12 +177,15 @@ public class GitHubSynchronizer {
     repos.create(repo);
 
     for (var f : List.of("LICENSE", "SECURITY.md", "CODE_OF_CONDUCT.md", "renovate.json", ".github/renovate.json")) {
-      var file = File.create()
-          .repository(repo.name())
-          .path(f)
-          .content(readFile(ghRepo, f))
-          .build();
-      files.create(file);
+      var content = readFile(ghRepo, f);
+      if (content != null && !content.isEmpty()) {
+        var file = File.create()
+            .repository(repo.name())
+            .path(f)
+            .content(content)
+            .build();
+        files.create(file);
+      }
     }
 
     ghRepo.getPullRequests(GHIssueState.OPEN).stream()
