@@ -21,6 +21,7 @@ import com.vaadin.flow.router.Route;
 
 import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.repo.check.RepoCheck;
 import io.ivyteam.devops.securityscanner.ScanType;
 import io.ivyteam.devops.securityscanner.SecurityScanner;
 import io.ivyteam.devops.securityscanner.SecurityScannerRepository;
@@ -32,7 +33,10 @@ public class ReposView extends View {
 
   private final Grid<Repo> grid;
 
-  public ReposView(RepoRepository repos, PullRequestRepository prs, BranchRepository branches,
+  public ReposView(
+      RepoRepository repos,
+      PullRequestRepository prs,
+      BranchRepository branches,
       SecurityScannerRepository securityscanners) {
 
     var repositories = repos.all();
@@ -72,26 +76,14 @@ public class ReposView extends View {
 
     grid
         .addComponentColumn(repo -> {
-          if (repo.license() != null) {
+          if (RepoCheck.run(repo).isEmpty()) {
             var icon = createIcon(VaadinIcon.CHECK);
             icon.getElement().getThemeList().add("badge success");
             return icon;
           }
           return null;
         })
-        .setHeader("License")
-        .setWidth("5%");
-
-    grid
-        .addComponentColumn(repo -> {
-          if (repo.renovateValid()) {
-            var icon = createIcon(VaadinIcon.CHECK);
-            icon.getElement().getThemeList().add("badge success");
-            return icon;
-          }
-          return null;
-        })
-        .setHeader("Renovate")
+        .setHeader("Checks")
         .setWidth("5%");
 
     grid.addComponentColumn(repo -> {
