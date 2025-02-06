@@ -36,6 +36,9 @@ public class UsersView extends View {
   }
 
   public static Component avatar(User user) {
+    if (user == null) {
+      return null;
+    }
     return new AvatarLinkComponent(user);
   }
 
