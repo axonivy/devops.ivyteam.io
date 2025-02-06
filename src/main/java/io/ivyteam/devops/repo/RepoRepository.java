@@ -1,5 +1,6 @@
 package io.ivyteam.devops.repo;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,24 +26,7 @@ public class RepoRepository {
         try (var result = stmt.executeQuery()) {
           var repos = new ArrayList<Repo>();
           while (result.next()) {
-            var name = result.getString("name");
-            var archived = result.getInt("archived") == 1;
-            var privateRepo = result.getInt("private") == 1;
-            var license = result.getString("license");
-            var securityMd = result.getString("securityMd");
-            var codeOfConduct = result.getString("codeOfConduct");
-            var renovateJson = result.getString("renovateJson");
-            var deleteBranchOnMerge = result.getInt("deleteBranchOnMerge") == 1;
-            var projects = result.getInt("projects") == 1;
-            var issues = result.getInt("issues") == 1;
-            var wiki = result.getInt("wiki") == 1;
-            var hooks = result.getInt("hooks") == 1;
-            var fork = result.getInt("fork") == 1;
-            var isVulnAlertOn = result.getInt("isVulnAlertOn") == 1;
-            var isRenovateValid = result.getInt("renovateValid") == 1;
-
-            var repo = new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
-                isVulnAlertOn, license, securityMd, codeOfConduct, renovateJson, isRenovateValid);
+            var repo = toRepo(result);
             repos.add(repo);
           }
           return repos;
@@ -51,6 +35,26 @@ public class RepoRepository {
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  private Repo toRepo(ResultSet result) throws SQLException {
+    return Repo.create()
+        .name(result.getString("name"))
+        .archived(result.getInt("archived") == 1)
+        .privateRepo(result.getInt("private") == 1)
+        .deleteBranchOnMerge(result.getInt("deleteBranchOnMerge") == 1)
+        .projects(result.getInt("projects") == 1)
+        .issues(result.getInt("issues") == 1)
+        .wiki(result.getInt("wiki") == 1)
+        .hooks(result.getInt("hooks") == 1)
+        .fork(result.getInt("fork") == 1)
+        .isVulnAlertOn(result.getInt("isVulnAlertOn") == 1)
+        .license(result.getString("license"))
+        .securityMd(result.getString("securityMd"))
+        .codeOfConduct(result.getString("codeOfConduct"))
+        .renovateJson(result.getString("renovateJson"))
+        .renovateValid(result.getInt("renovateValid") == 1)
+        .build();
   }
 
   public boolean exist(String name) {
