@@ -24,15 +24,18 @@ class RenovateRepoCheck implements RepoCheck {
       return null;
     }
     var renovateFile = files.byPath(repo, "renovate.json");
-    if (renovateFile == null || renovateFile.content() == null || renovateFile.content().isEmpty()) {
+    if (renovateFile == null) {
       renovateFile = files.byPath(repo, ".github/renovate.json");
+    }
+    if (renovateFile == null) {
+      return "renovate.json and .github/renovate.json is missing";
     }
     var content = renovateFile.content();
     if (content == null || content.isEmpty()) {
-      return "renovate.json and .github/renovate.json is missing";
+      return renovateFile.path() + " is empty";
     }
     if (!content.contains(SHARED)) {
-      return "renovate.json does not use shared config '" + SHARED + "'";
+      return renovateFile + " does not use shared config '" + SHARED + "'";
     }
     return null;
   }
