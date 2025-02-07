@@ -207,20 +207,6 @@ public class GitHubSynchronizer {
     }
   }
 
-  private String readFile(GHRepository repo, String file, String fallBackFile) throws IOException {
-    try {
-      try (var in = repo.getFileContent(file).read()) {
-        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-      }
-    } catch (GHFileNotFoundException e) {
-      try (var in = repo.getFileContent(fallBackFile).read()) {
-        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-      } catch (GHFileNotFoundException ex) {
-        return null;
-      }
-    }
-  }
-
   private PullRequest toPullRequest(GHPullRequest pr) {
     try {
       return PullRequest.create()
