@@ -22,6 +22,7 @@ import com.vaadin.flow.router.Route;
 import io.ivyteam.devops.branch.BranchRepository;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.check.RepoCheck;
+import io.ivyteam.devops.repo.check.RepoCheck.Result;
 import io.ivyteam.devops.securityscanner.ScanType;
 import io.ivyteam.devops.securityscanner.SecurityScanner;
 import io.ivyteam.devops.securityscanner.SecurityScannerRepository;
@@ -76,7 +77,7 @@ public class ReposView extends View {
 
     grid
         .addComponentColumn(repo -> {
-          if (RepoCheck.run(repo).isEmpty()) {
+          if (RepoCheck.run(repo).stream().allMatch(Result::success)) {
             var icon = createIcon(VaadinIcon.CHECK);
             icon.getElement().getThemeList().add("badge success");
             return icon;
