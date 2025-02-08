@@ -1,5 +1,6 @@
 package io.ivyteam.devops.repo.check;
 
+import io.ivyteam.devops.file.File;
 import io.ivyteam.devops.file.FileRepository;
 import io.ivyteam.devops.repo.Repo;
 
@@ -14,29 +15,24 @@ class RenovateRepoCheck implements RepoCheck {
   }
 
   @Override
-  public String name() {
-    return "renovate.json exists and uses shared config";
-  }
-
-  @Override
-  public String check(Repo repo) {
+  public Result check(Repo repo) {
     if (repo.archived()) {
-      return null;
+      return Result.success("Archived repository do not need renovate");
     }
-    var renovateFile = files.byPath(repo, "renovate.json");
+    var renovateFile = files.byPath(repo, File.RENOVATE_JSON);
     if (renovateFile == null) {
-      renovateFile = files.byPath(repo, ".github/renovate.json");
+      renovateFile = files.byPath(repo, File.GITHUB_RENOVATE_JSON);
     }
     if (renovateFile == null) {
-      return "renovate.json and .github/renovate.json is missing";
+      return Result.failed(File.RENOVATE_JSON + " and " + File.GITHUB_RENOVATE_JSON + " is missing");
     }
     var content = renovateFile.content();
     if (content == null || content.isEmpty()) {
-      return renovateFile.path() + " is empty";
+      return Result.failed(renovateFile.path() + " is empty");
     }
     if (!content.contains(SHARED)) {
-      return renovateFile + " does not use shared config '" + SHARED + "'";
+      return Result.failed(renovateFile.path() + " does not use shared config '" + SHARED + "'");
     }
-    return null;
+    return Result.success(renovateFile.path() + " exists and uses shared config");
   }
 }

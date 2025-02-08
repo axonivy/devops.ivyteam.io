@@ -176,12 +176,10 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var select = new ArrayList<String>();
 
     for (var check : RepoCheck.all()) {
-      var error = check.check(repo);
-      if (error == null) {
-        select.add(check.name());
-        items.add(check.name());
-      } else {
-        items.add(error);
+      var result = check.check(repo);
+      items.add(result.message());
+      if (result.success()) {
+        select.add(result.message());
       }
     }
 
