@@ -5,6 +5,12 @@ public record File(
     String path,
     String content) {
 
+  public static final String LICENSE = "LICENSE";
+  public static final String RENOVATE_JSON = "renovate.json";
+  public static final String GITHUB_RENOVATE_JSON = ".github/renovate.json";
+  public static final String SECURITY_MD = "SECURITY.md";
+  public static final String CODE_OF_CONDUCT_MD = "CODE_OF_CONDUCT.md";
+
   public static Builder create() {
     return new Builder();
   }

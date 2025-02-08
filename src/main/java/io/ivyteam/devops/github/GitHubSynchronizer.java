@@ -176,7 +176,8 @@ public class GitHubSynchronizer {
         .build();
     repos.create(repo);
 
-    for (var f : List.of("LICENSE", "SECURITY.md", "CODE_OF_CONDUCT.md", "renovate.json", ".github/renovate.json")) {
+    for (var f : List.of(File.LICENSE, File.SECURITY_MD, File.CODE_OF_CONDUCT_MD, File.RENOVATE_JSON,
+        File.GITHUB_RENOVATE_JSON)) {
       var content = readFile(ghRepo, f);
       if (content != null && !content.isEmpty()) {
         var file = File.create()
