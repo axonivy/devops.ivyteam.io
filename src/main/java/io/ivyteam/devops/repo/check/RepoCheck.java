@@ -22,7 +22,8 @@ public interface RepoCheck {
         new RenovateRepoCheck(files),
         new FileExistsRepoCheck(files, File.LICENSE),
         new FileExistsRepoCheck(files, File.CODE_OF_CONDUCT_MD),
-        new FileExistsRepoCheck(files, File.SECURITY_MD));
+        new FileExistsRepoCheck(files, File.SECURITY_MD),
+        new VulnerabilityScanningEnabledRepoCheck());
   }
 
   public static List<Result> run(Repo repo) {
