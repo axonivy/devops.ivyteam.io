@@ -29,6 +29,7 @@ import io.ivyteam.devops.file.FileRepository;
 import io.ivyteam.devops.github.GitHubProvider;
 import io.ivyteam.devops.github.GitHubRepoConfigurator;
 import io.ivyteam.devops.github.GitHubSynchronizer;
+import io.ivyteam.devops.pullrequest.PullRequestCache;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.repo.check.RepoCheck;
@@ -76,6 +77,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
 
     var userCache = new UserCache(users.all());
     var repoPrs = pullRequests.findByRepository(repo.name());
+    var prCache = new PullRequestCache(repoPrs);
     var prCounter = new Span("Pull Requests (" + repoPrs.size() + ")");
     var tabPrs = new Tab(prCounter);
     var gridPrs = PullRequestGrid.create(repoPrs, data -> {
@@ -86,7 +88,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
     var branchCounter = new Span("Branches (" + repoBranches.size() + ")");
     var tabBranches = new Tab(branchCounter);
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, parameter);
-    var gridBranches = new BranchGrid(repoBranches, pullRequests, RepoView.class, routeParameters, data -> {
+    var gridBranches = new BranchGrid(repoBranches, prCache, RepoView.class, routeParameters, data -> {
     }, userCache).create();
     tabSheet.add(tabBranches, gridBranches);
 

@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -23,7 +22,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
 
-import io.ivyteam.devops.pullrequest.PullRequestRepository;
+import io.ivyteam.devops.pullrequest.PullRequestCache;
 import io.ivyteam.devops.repo.Repo;
 import io.ivyteam.devops.repo.ReposView;
 import io.ivyteam.devops.settings.SettingsManager;
@@ -42,13 +41,13 @@ public class BranchGrid {
   private final Consumer<GridListDataView<?>> update;
   private String searchValue = "";
   private String excludedPrefixes = "";
-  private PullRequestRepository prRepo;
+  private PullRequestCache prCache;
   private UserCache userCache;
 
-  public BranchGrid(List<Branch> branches, PullRequestRepository prRepo, Class<? extends Component> navigationTarget,
+  public BranchGrid(List<Branch> branches, PullRequestCache prCache, Class<? extends Component> navigationTarget,
       RouteParameters routeParameters, Consumer<GridListDataView<?>> update, UserCache userCache) {
     this.branches = branches;
-    this.prRepo = prRepo;
+    this.prCache = prCache;
     this.navigationTarget = navigationTarget;
     this.routeParameters = routeParameters;
     this.update = update;
@@ -56,8 +55,6 @@ public class BranchGrid {
   }
 
   public Component create() {
-    var prs = prRepo.all().stream()
-        .collect(Collectors.toMap(key -> key.repository() + key.branchName(), value -> value));
     var grid = new Grid<Branch>(branches);
     grid.setSizeFull();
 
@@ -81,11 +78,12 @@ public class BranchGrid {
 
     grid
         .addComponentColumn(branch -> {
-          var pr = prs.get(branch.repository() + branch.name());
-          if (pr == null) {
-            return null;
+          var prs = prCache.get(branch.repository(), branch.name());
+          var layout = new HorizontalLayout();
+          for (var pr : prs) {
+            layout.add(new Anchor(pr.ghLink(), "#" + pr.id()));
           }
-          return new Anchor(pr.ghLink(), "#" + pr.id());
+          return layout;
         })
         .setHeader("PR")
         .setWidth("5%");
