@@ -20,6 +20,7 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 import io.ivyteam.devops.branch.BranchGrid;
 import io.ivyteam.devops.branch.BranchRepository;
+import io.ivyteam.devops.pullrequest.PullRequestCache;
 import io.ivyteam.devops.pullrequest.PullRequestGrid;
 import io.ivyteam.devops.pullrequest.PullRequestRepository;
 import io.ivyteam.devops.view.View;
@@ -48,6 +49,7 @@ public class UserView extends View implements HasUrlParameter<String> {
     tabSheet.setSizeFull();
 
     var allPrs = pullRequests.findByUser(user);
+    var prCache = new PullRequestCache(allPrs);
     var tabPrs = new Tab(prCounter);
     var userCache = new UserCache(users.all());
     var gridPrs = PullRequestGrid.create(allPrs, this::updatePrTitle, userCache);
@@ -57,7 +59,7 @@ public class UserView extends View implements HasUrlParameter<String> {
     var tabBranches = new Tab(branchCounter);
 
     var routeParameters = new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME, user);
-    var gridBranches = new BranchGrid(allBranches, pullRequests, UserView.class, routeParameters,
+    var gridBranches = new BranchGrid(allBranches, prCache, UserView.class, routeParameters,
         this::updateBranchTitle, userCache).create();
     tabSheet.add(tabBranches, gridBranches);
     setContent(tabSheet);
