@@ -243,7 +243,7 @@ public class GitHubSynchronizer {
       var org = gitHub.get().getOrganization(orgName);
       return List.copyOf(org.getRepositories().values()).stream()
           // .filter(r -> r.getFullName().contains("dev-workflow-ui"))
-          .limit(2)
+          // .limit(10)
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
