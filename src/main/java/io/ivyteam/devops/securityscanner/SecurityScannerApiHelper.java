@@ -122,7 +122,7 @@ public class SecurityScannerApiHelper {
 
   public void synch(ScanType scantype) throws IOException {
     var json = getAlerts(repo.getUrl(), token, scantype);
-    if (json == null) {
+    if (json == null || json.length() == 2) {
       return;
     }
     var alerts = parseAlerts(json, repo.getName(), scantype);
@@ -135,7 +135,7 @@ public class SecurityScannerApiHelper {
         .critical(alerts.critical())
         .high(alerts.high())
         .medium(alerts.medium())
-        .low(alerts.medium())
+        .low(alerts.low())
         .build();
     securityScanners.create(scanner);
   }
