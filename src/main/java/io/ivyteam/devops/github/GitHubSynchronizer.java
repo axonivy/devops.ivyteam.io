@@ -131,6 +131,10 @@ public class GitHubSynchronizer {
         }
       }
 
+      for (var repo : repos) {
+        syncSecurityScanner(repo);
+      }
+
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     } finally {
@@ -264,4 +268,5 @@ public class GitHubSynchronizer {
   public record Progress(String message, double percent) {
 
   }
+
 }
