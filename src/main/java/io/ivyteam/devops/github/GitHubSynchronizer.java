@@ -131,10 +131,6 @@ public class GitHubSynchronizer {
         }
       }
 
-      for (var repo : repos) {
-        syncSecurityScanner(repo);
-      }
-
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     } finally {
@@ -247,7 +243,7 @@ public class GitHubSynchronizer {
       var org = gitHub.get().getOrganization(orgName);
       return List.copyOf(org.getRepositories().values()).stream()
           // .filter(r -> r.getFullName().contains("dev-workflow-ui"))
-          // .limit(10)
+          .limit(2)
           .toList();
     } catch (IOException ex) {
       throw new RuntimeException(ex);
@@ -268,5 +264,4 @@ public class GitHubSynchronizer {
   public record Progress(String message, double percent) {
 
   }
-
 }
