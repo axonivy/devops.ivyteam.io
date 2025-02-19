@@ -105,15 +105,6 @@ public class GitHubSynchronizer {
 
         repo = gitHub.get().getRepository(repo.getFullName());
         synch(repo);
-        var helper = new SecurityScannerApiHelper(securityScanners, repo, gitHub.token());
-        if (repo.isVulnerabilityAlertsEnabled()) {
-          helper.synch(ScanType.DEPENDABOT);
-        }
-        if (!repo.isPrivate()) {
-          helper.synch(ScanType.CODE_SCANNING);
-          helper.synch(ScanType.SECRET_SCANNING);
-        }
-
       }
       notify("Indexing finished", 1);
 
@@ -138,6 +129,10 @@ public class GitHubSynchronizer {
         } catch (Exception ex) {
           System.out.println("Could not find user " + u.name());
         }
+      }
+
+      for (var repo : repos) {
+        syncSecurityScanner(repo);
       }
 
     } catch (Exception ex) {
@@ -196,6 +191,8 @@ public class GitHubSynchronizer {
     ghRepo.getBranches().values().stream()
         .map(b -> toBranch(b, ghRepo))
         .forEach(branches::create);
+
+    syncSecurityScanner(ghRepo);
   }
 
   private String readFile(GHRepository repo, String file) throws IOException {
@@ -249,6 +246,7 @@ public class GitHubSynchronizer {
     try {
       var org = gitHub.get().getOrganization(orgName);
       return List.copyOf(org.getRepositories().values()).stream()
+          // .filter(r -> r.getFullName().contains("dev-workflow-ui"))
           // .limit(10)
           .toList();
     } catch (IOException ex) {
@@ -256,7 +254,19 @@ public class GitHubSynchronizer {
     }
   }
 
+  private void syncSecurityScanner(GHRepository repo) throws IOException {
+    var helper = new SecurityScannerApiHelper(securityScanners, repo, gitHub.token());
+    if (repo.isVulnerabilityAlertsEnabled()) {
+      helper.synch(ScanType.DEPENDABOT);
+    }
+    if (!repo.isPrivate()) {
+      helper.synch(ScanType.CODE_SCANNING);
+      helper.synch(ScanType.SECRET_SCANNING);
+    }
+  }
+
   public record Progress(String message, double percent) {
 
   }
+
 }
