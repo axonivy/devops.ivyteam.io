@@ -3,6 +3,7 @@ package io.ivyteam.devops.securityscanner;
 public record SecurityScanner(
     String repo,
     ScanType scantype,
+    String msg,
     int critical,
     int high,
     int medium,
@@ -39,6 +40,7 @@ public record SecurityScanner(
 
     private String repo;
     private ScanType scantype;
+    private String msg;
     private int critical;
     private int high;
     private int medium;
@@ -51,6 +53,11 @@ public record SecurityScanner(
 
     public Builder scantype(ScanType scantype) {
       this.scantype = scantype;
+      return this;
+    }
+
+    public Builder msg(String msg) {
+      this.msg = msg;
       return this;
     }
 
@@ -75,7 +82,7 @@ public record SecurityScanner(
     }
 
     public SecurityScanner build() {
-      return new SecurityScanner(repo, scantype, critical, high, medium, low);
+      return new SecurityScanner(repo, scantype, msg, critical, high, medium, low);
     }
   }
 }

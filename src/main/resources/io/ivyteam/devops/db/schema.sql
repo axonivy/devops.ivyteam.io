@@ -50,6 +50,7 @@ CREATE TABLE branch (
 CREATE TABLE securityscanner (
     repository VARCHAR(200) NOT NULL,
     scantype VARCHAR(200) NOT NULL,
+    msg VARCHAR(200),
     critical INTEGER NOT NULL,
     high INTEGER NOT NULL,
     medium INTEGER NOT NULL,

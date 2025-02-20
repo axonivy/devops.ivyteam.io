@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class Database {
 
-  private static final String VERSION = "18";
+  private static final String VERSION = "19";
   private final Path path;
 
   public Database() {
