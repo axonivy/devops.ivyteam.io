@@ -51,14 +51,14 @@ public class SecurityScannerRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO securityscanner (repository, scantype, critical, high, medium, low) VALUES (?, ?, ?, ?, ?, ?)")) {
+          "INSERT INTO securityscanner (repository, scantype, msg, critical, high, medium, low) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, securityScanner.repo());
         stmt.setString(2, securityScanner.scantype().getValue());
-        stmt.setInt(3, securityScanner.critical());
-        stmt.setInt(4, securityScanner.high());
-        stmt.setInt(5, securityScanner.medium());
-        stmt.setInt(6, securityScanner.low());
-
+        stmt.setString(3, securityScanner.msg());
+        stmt.setInt(4, securityScanner.critical());
+        stmt.setInt(5, securityScanner.high());
+        stmt.setInt(6, securityScanner.medium());
+        stmt.setInt(7, securityScanner.low());
         stmt.execute();
       }
     } catch (SQLException ex) {
@@ -70,6 +70,7 @@ public class SecurityScannerRepository {
     return SecurityScanner.create()
         .repo(result.getString("repository"))
         .scantype(ScanType.fromValue(result.getString("scantype")))
+        .msg(result.getString("msg"))
         .critical(result.getInt("critical"))
         .high(result.getInt("high"))
         .medium(result.getInt("medium"))
