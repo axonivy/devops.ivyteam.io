@@ -247,17 +247,25 @@ public class ReposView extends View {
 
   private Anchor toSecurityScannerLink(SecurityScanner ss) {
     int summary = ss.critical() + ss.high() + ss.medium() + ss.low();
-    var text = ss.scantype().getValue() + "->  C: " + ss.critical() + " | H: " + ss.high() + " | M: " + ss.medium()
-        + " | L: "
-        + ss.low();
+    var text = ss.scantype().getValue() + "->  C: " + ss.critical()
+        + " | H: " + ss.high() + " | M: " + ss.medium() + " | L: " + ss.low();
 
     var icon = VaadinIcon.QUESTION_CIRCLE.create();
     icon.setSize("14px");
-    icon.setTooltipText(text);
-    icon.getStyle().set("margin-left", "4px");
-
     var a = new Anchor(ss.link(), String.valueOf(summary), AnchorTarget.BLANK);
     a.add(icon);
+
+    if (ss.msg() != null && !ss.msg().isEmpty()) {
+      icon.setIcon(VaadinIcon.INFO_CIRCLE);
+      icon.setTooltipText(ss.msg());
+      a.getElement().getThemeList().add("badge pill small contrast");
+      a.setText(null);
+      a.add(icon);
+      return a;
+    }
+
+    icon.setTooltipText(text);
+    icon.getStyle().set("margin-left", "4px");
 
     if (ss.critical() + ss.high() > 0) {
       a.getElement().getThemeList().add("badge pill small error");
