@@ -73,6 +73,9 @@ public class SecurityScannerApiHelper {
       if (response.statusCode() == HttpURLConnection.HTTP_OK) {
         return response.body();
       }
+      if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND && response.body() != null) {
+        return response.body();
+      }
       if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
         return null;
       } else {
@@ -88,33 +91,31 @@ public class SecurityScannerApiHelper {
     try {
       JsonNode root = MAPPER.readTree(json);
       Map<String, Long> severityCounts = new HashMap<>();
+      String msg = root.findPath("message").asText();
+      if (!msg.equals("no analysis found")) {
 
-      if (scantype.equals(ScanType.DEPENDABOT)) {
         for (JsonNode node : root) {
-          if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
+          if (scantype.equals(ScanType.DEPENDABOT) && node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
             severityCounts.merge(node.path("security_vulnerability").path("severity").asText(), 1L, Long::sum);
-          }
-        }
-      } else if (scantype.equals(ScanType.CODE_SCANNING)) {
-        for (JsonNode node : root) {
-          if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
+
+          } else if (scantype.equals(ScanType.CODE_SCANNING)
+              && node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
             severityCounts.merge(node.path("rule").path("security_severity_level").asText(), 1L, Long::sum);
-          }
-        }
-      } else if (scantype.equals(ScanType.SECRET_SCANNING)) {
-        for (JsonNode node : root) {
-          if (node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
+
+          } else if (scantype.equals(ScanType.SECRET_SCANNING)
+              && node.path("state").asText().equals(ALERT_REQUIRED_STATE)) {
             severityCounts.merge((node.path("url").asText() != null ? "high" : null), 1L, Long::sum);
           }
         }
       }
-
       int low = Math.toIntExact(severityCounts.getOrDefault(LEVEL_LOW, 0L));
       int medium = Math.toIntExact(severityCounts.getOrDefault(LEVEL_MEDIUM, 0L));
       int high = Math.toIntExact(severityCounts.getOrDefault(LEVEL_HIGH, 0L));
       int critical = Math.toIntExact(severityCounts.getOrDefault(LEVEL_CRITICAL, 0L));
-      return new SecurityScanner(repoName, scantype, critical, high, medium, low);
-    } catch (Exception ex) {
+      return new SecurityScanner(repoName, scantype, msg, critical, high, medium, low);
+    } catch (
+
+    Exception ex) {
       LOGGER.warn("Could not read jsonFile", ex);
     }
     return null;
@@ -122,7 +123,7 @@ public class SecurityScannerApiHelper {
 
   public void synch(ScanType scantype) throws IOException {
     var json = getAlerts(repo.getUrl(), token, scantype);
-    if (json == null || json.length() == 2) {
+    if (json == null) {
       return;
     }
     var alerts = parseAlerts(json, repo.getName(), scantype);
@@ -132,6 +133,7 @@ public class SecurityScannerApiHelper {
     var scanner = SecurityScanner.create()
         .repo(repo.getFullName())
         .scantype(alerts.scantype())
+        .msg(alerts.msg())
         .critical(alerts.critical())
         .high(alerts.high())
         .medium(alerts.medium())
