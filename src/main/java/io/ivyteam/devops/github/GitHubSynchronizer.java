@@ -27,8 +27,8 @@ import io.ivyteam.devops.repo.RepoRepository;
 import io.ivyteam.devops.securityscanner.ScanType;
 import io.ivyteam.devops.securityscanner.SecurityScannerApiHelper;
 import io.ivyteam.devops.securityscanner.SecurityScannerRepository;
+import io.ivyteam.devops.user.User;
 import io.ivyteam.devops.user.UserRepository;
-import io.ivyteam.devops.user.UserUpdate;
 
 @Service
 public class GitHubSynchronizer {
@@ -119,15 +119,21 @@ public class GitHubSynchronizer {
 
       for (var u : users.all()) {
         try {
-          var user = gitHub.get().getUser(u.name());
+          var user = gitHub.get().getUser(u.login());
           if (user != null) {
-            var update = UserUpdate.create(user.getLogin())
+            var update = User.create()
+                .login(user.getLogin())
+                .name(user.getName())
+                .email(user.getEmail())
+                .company(user.getCompany())
+                .location(user.getLocation())
+                .bio(user.getBio())
                 .avatarUrl(user.getAvatarUrl())
                 .build();
             users.update(update);
           }
         } catch (Exception ex) {
-          System.out.println("Could not find user " + u.name());
+          System.out.println("Could not find user " + u.login());
         }
       }
 

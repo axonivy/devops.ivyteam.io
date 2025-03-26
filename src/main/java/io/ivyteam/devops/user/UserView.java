@@ -76,7 +76,7 @@ public class UserView extends View implements HasUrlParameter<String> {
   public static Component userLink(User user) {
     var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
     var layout = new HorizontalLayout();
-    layout.add(new Anchor(user.link(), user.name()));
+    layout.add(new Anchor(user.link(), user.login()));
     layout.add(new Anchor(user.ghLink(), icon));
     layout.setSpacing(false);
     layout.setAlignItems(Alignment.CENTER);

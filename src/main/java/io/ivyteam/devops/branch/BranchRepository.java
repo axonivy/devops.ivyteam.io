@@ -63,7 +63,9 @@ public class BranchRepository {
   }
 
   public void create(Branch branch) {
-    var user = new User(branch.lastCommitAuthor(), "");
+    var user = User.create()
+        .login(branch.lastCommitAuthor())
+        .build();
     if (!users.exists(user)) {
       users.create(user);
     }

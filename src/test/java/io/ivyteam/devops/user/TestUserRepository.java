@@ -13,12 +13,17 @@ import io.ivyteam.devops.db.Database;
 class TestUserRepository {
 
   private static final User ALEX = User.create()
-      .name("alex")
+      .login("alex")
+      .name("Alex Suter")
+      .email("alexander.suter@axonivy.com")
+      .location("Zug")
+      .company("Axon Ivy AG")
+      .bio("Handballer")
       .avatarUrl("https://example.com/alex.png")
       .build();
 
   private static final User LOUIS = User.create()
-      .name("louis")
+      .login("louis")
       .avatarUrl("https://example.com/louis.png")
       .build();
 
@@ -65,12 +70,13 @@ class TestUserRepository {
   @Test
   void update() {
     users.create(ALEX);
-    var update = UserUpdate.create("alex")
+    var update = User.create()
+        .login("alex")
         .avatarUrl("https://example.com/suter.png")
         .build();
     users.update(update);
     var suter = User.create()
-        .name("alex")
+        .login("alex")
         .avatarUrl("https://example.com/suter.png")
         .build();
     assertThat(users.all()).containsExactly(suter);
@@ -78,7 +84,8 @@ class TestUserRepository {
 
   @Test
   void update_nonExisting() {
-    var update = UserUpdate.create("lukas")
+    var update = User.create()
+        .login("lukas")
         .avatarUrl("https://example.com/alex.png")
         .build();
     users.update(update);
