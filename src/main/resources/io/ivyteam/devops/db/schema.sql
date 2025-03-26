@@ -1,7 +1,12 @@
 CREATE TABLE user (
-    name VARCHAR(200) NOT NULL,
+    login VARCHAR(200) NOT NULL,
+    name VARCHAR(200) NULL,
+    email VARCHAR(200) NULL,
+    company VARCHAR(200) NULL,
+    location VARCHAR(200) NULL,
+    bio TEXT NULL,
     avatarUrl VARCHAR(200) NULL,
-    PRIMARY KEY (name)
+    PRIMARY KEY (login)
 );
 
 CREATE TABLE repository (
@@ -33,7 +38,7 @@ CREATE TABLE pull_request (
     branchName VARCHAR(400) NOT NULL,
     PRIMARY KEY (repository, id),
     FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,
-    FOREIGN KEY (user) REFERENCES user (name) ON DELETE CASCADE
+    FOREIGN KEY (user) REFERENCES user (login) ON DELETE CASCADE
 );
 
 CREATE TABLE branch (
@@ -44,7 +49,7 @@ CREATE TABLE branch (
     authoredDate DATE NOT NULL,
     PRIMARY KEY (repository, name),
     FOREIGN KEY (repository) REFERENCES repository (name) ON DELETE CASCADE,
-    FOREIGN KEY (lastCommitAuthor) REFERENCES user (name) ON DELETE CASCADE
+    FOREIGN KEY (lastCommitAuthor) REFERENCES user (login) ON DELETE CASCADE
 );
 
 CREATE TABLE securityscanner (

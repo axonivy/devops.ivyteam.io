@@ -27,10 +27,45 @@ public class UsersView extends View {
 
     grid
         .addComponentColumn(AvatarLinkComponent::new)
+        .setHeader("Login")
+        .setWidth("12%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(User::login));
+
+    grid
+        .addColumn(user -> user.name())
         .setHeader("Name")
-        .setWidth("100%")
+        .setWidth("12%")
         .setSortable(true)
         .setComparator(Comparator.comparing(User::name));
+
+    grid
+        .addColumn(user -> user.email())
+        .setHeader("Email")
+        .setWidth("12%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(User::email));
+
+    grid
+        .addColumn(user -> user.location())
+        .setHeader("Location")
+        .setWidth("15%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(User::location));
+
+    grid
+        .addColumn(user -> user.company())
+        .setHeader("Company")
+        .setWidth("15%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(User::company));
+
+    grid
+        .addColumn(user -> user.bio())
+        .setHeader("Bio")
+        .setWidth("34%")
+        .setSortable(true)
+        .setComparator(Comparator.comparing(User::bio));
 
     setContent(grid);
   }
@@ -46,12 +81,12 @@ public class UsersView extends View {
 
     public AvatarLinkComponent(User user) {
       var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
-      var avatar = new Avatar(user.name());
+      var avatar = new Avatar(user.login());
       avatar.setImage(user.avatarUrl());
       avatar.setWidth("30px");
       avatar.setHeight("30px");
       add(avatar);
-      add(new Anchor(user.link(), user.name()));
+      add(new Anchor(user.link(), user.login()));
       add(new Anchor(user.ghLink(), icon));
       setAlignItems(Alignment.CENTER);
       setSpacing(false);

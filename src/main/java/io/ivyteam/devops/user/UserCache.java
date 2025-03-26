@@ -10,11 +10,11 @@ public class UserCache {
 
   public UserCache(List<User> all) {
     for (var user : all) {
-      users.put(user.name(), user);
+      users.put(user.login(), user);
     }
   }
 
-  public User get(String name) {
-    return users.get(name);
+  public User get(String login) {
+    return users.get(login);
   }
 }
