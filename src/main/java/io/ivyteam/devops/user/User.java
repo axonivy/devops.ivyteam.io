@@ -14,6 +14,10 @@ public record User(
   }
 
   public String ghLink() {
+    return ghLink(login);
+  }
+
+  public static String ghLink(String login) {
     return "https://github.com/" + login;
   }
 
