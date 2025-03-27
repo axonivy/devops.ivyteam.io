@@ -3,7 +3,9 @@ package io.ivyteam.devops.view;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.avatar.AvatarVariant;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -17,17 +19,22 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public abstract class View extends AppLayout {
 
+  private HorizontalLayout titleComponent;
   protected H1 title;
 
   public View() {
     var layout = new HorizontalLayout();
 
+    titleComponent = new HorizontalLayout();
+    titleComponent.setSpacing(false);
     title = new H1(title());
     title.getStyle()
         .set("font-size", "var(--lumo-font-size-l)")
         .set("margin-left", "18px")
         .set("padding-top", "5px");
-    layout.addAndExpand(title);
+    titleComponent.add(title);
+
+    layout.addAndExpand(titleComponent);
 
     var session = ApplicationContextUtil.getBean(UserSession.class);
     var user = session.user();
@@ -59,5 +66,20 @@ public abstract class View extends AppLayout {
 
   public String title() {
     return "";
+  }
+
+  public void addTitleLink(String link) {
+    var icon = createIcon(VaadinIcon.EXTERNAL_LINK);
+    var anchor = new Anchor(link, icon);
+    titleComponent.add(anchor);
+  }
+
+  private static Icon createIcon(VaadinIcon vaadinIcon) {
+    var icon = vaadinIcon.create();
+    icon.getStyle().set("padding", "0.15em");
+    icon.getStyle().set("margin-left", "0.15em");
+    icon.getStyle().set("margin-top", "0.15em");
+    icon.setSize("var(--lumo-icon-size-s)");
+    return icon;
   }
 }

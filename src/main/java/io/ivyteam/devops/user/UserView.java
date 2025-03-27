@@ -44,6 +44,7 @@ public class UserView extends View implements HasUrlParameter<String> {
   public void setParameter(BeforeEvent event, String user) {
     prCounter = new Span();
     title.setText(user);
+    addTitleLink(User.ghLink(user));
 
     var tabSheet = new TabSheet();
     tabSheet.setSizeFull();

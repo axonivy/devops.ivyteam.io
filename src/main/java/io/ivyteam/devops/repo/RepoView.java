@@ -69,6 +69,7 @@ public class RepoView extends View implements HasUrlParameter<String> {
         .orElseThrow();
 
     title.setText(repo.name());
+    addTitleLink(repo.gitHubLink());
 
     var tabSheet = new TabSheet();
 
