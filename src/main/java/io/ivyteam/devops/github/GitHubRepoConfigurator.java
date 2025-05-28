@@ -62,13 +62,6 @@ public class GitHubRepoConfigurator {
         SecurityScannerApiHelper.enableAlerts(ghRepo.getUrl(), gitHub.token(), ScanType.DEPENDABOT.getValue());
         changed = true;
       }
-      if (repo.hooks()) {
-        for (var hook : ghRepo.getHooks()) {
-          LOGGER.info("Delete hook");
-          hook.delete();
-          changed = true;
-        }
-      }
       for (var br : brs) {
         if (needsProtection(br)) {
           if (!br.protectedBranch()) {
