@@ -3,13 +3,6 @@
   "extends": [
     "local>axonivy/renovate-config"
   ],
-  "packageRules": [
-    {
-      "automerge": true,
-      "matchDepTypes": [
-        "test"
-      ]
-    }
-  ]
+  "automerge": true,
+  "automergeType": "branch"
 }
-
