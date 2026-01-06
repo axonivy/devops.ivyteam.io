@@ -19,7 +19,8 @@ CREATE TABLE repository (
     wiki INTEGER NOT NULL,
     hooks INTEGER NOT NULL,
     fork INTEGER NOT NULL,
-    isVulnAlertOn INTEGER NOT NULL
+    isVulnAlertOn INTEGER NOT NULL,
+    autolinks TEXT NULL
 );
 
 CREATE TABLE file (

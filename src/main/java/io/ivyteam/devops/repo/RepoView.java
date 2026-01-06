@@ -159,6 +159,16 @@ public class RepoView extends View implements HasUrlParameter<String> {
     chkHooks.setReadOnly(true);
     formLayout.add(chkHooks);
 
+    var lblAutolinks = new Span("Autolinks");
+    formLayout.add(lblAutolinks);
+
+    var txtAutolinks = new TextArea();
+    txtAutolinks.setValue(repo.autolinks() == null ? "" : repo.autolinks());
+    txtAutolinks.setReadOnly(true);
+    txtAutolinks.getStyle().set("width", "200px");
+    txtAutolinks.setHeight("100px");
+    formLayout.add(txtAutolinks);
+
     var tabSheet = new TabSheet();
 
     for (var file : files.all(repo)) {

@@ -57,6 +57,20 @@ public class GitHubRepoConfigurator {
         ghRepo.enableWiki(false);
         changed = true;
       }
+      if (repo.autolinks() == null || !repo.autolinks().equals("https://axon-ivy.atlassian.net/browse/XIVY-<num>")) {
+        ghRepo.listAutolinks().forEach(link -> {
+          try {
+            link.delete();
+          } catch (IOException ex) {
+            throw new RuntimeException(ex);
+          }
+        });
+        ghRepo.createAutolink()
+            .withIsAlphanumeric(true)
+            .withKeyPrefix("XIVY-")
+            .withUrlTemplate("https://axon-ivy.atlassian.net/browse/XIVY-<num>")
+            .create();
+      }
       if (!repo.isVulnAlertOn() && ghRepo.isPrivate()) {
         LOGGER.info("Enable Vulnerability-alerts");
         SecurityScannerApiHelper.enableAlerts(ghRepo.getUrl(), gitHub.token(), ScanType.DEPENDABOT.getValue());
