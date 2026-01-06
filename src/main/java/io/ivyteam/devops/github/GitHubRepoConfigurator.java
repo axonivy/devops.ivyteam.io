@@ -60,16 +60,19 @@ public class GitHubRepoConfigurator {
       if (repo.autolinks() == null || !repo.autolinks().equals("https://axon-ivy.atlassian.net/browse/XIVY-<num>")) {
         ghRepo.listAutolinks().forEach(link -> {
           try {
+            LOGGER.info("Delete autolink " + link.getUrlTemplate());
             link.delete();
           } catch (IOException ex) {
             throw new RuntimeException(ex);
           }
         });
+        LOGGER.info("Create autolink");
         ghRepo.createAutolink()
             .withIsAlphanumeric(false)
             .withKeyPrefix("XIVY-")
             .withUrlTemplate("https://axon-ivy.atlassian.net/browse/XIVY-<num>")
             .create();
+        changed = true;
       }
       if (!repo.isVulnAlertOn() && ghRepo.isPrivate()) {
         LOGGER.info("Enable Vulnerability-alerts");
