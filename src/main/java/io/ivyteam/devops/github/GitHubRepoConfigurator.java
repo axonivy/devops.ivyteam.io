@@ -66,7 +66,7 @@ public class GitHubRepoConfigurator {
           }
         });
         ghRepo.createAutolink()
-            .withIsAlphanumeric(true)
+            .withIsAlphanumeric(false)
             .withKeyPrefix("XIVY-")
             .withUrlTemplate("https://axon-ivy.atlassian.net/browse/XIVY-<num>")
             .create();
