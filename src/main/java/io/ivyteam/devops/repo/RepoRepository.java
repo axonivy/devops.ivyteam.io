@@ -49,6 +49,7 @@ public class RepoRepository {
         .hooks(result.getInt("hooks") == 1)
         .fork(result.getInt("fork") == 1)
         .isVulnAlertOn(result.getInt("isVulnAlertOn") == 1)
+        .autolinks(result.getString("autolinks"))
         .build();
   }
 
@@ -74,7 +75,7 @@ public class RepoRepository {
       }
 
       try (var stmt = connection.prepareStatement(
-          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, isVulnAlertOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+          "INSERT INTO repository (name, archived, private, deleteBranchOnMerge, projects, issues, wiki, hooks, fork, isVulnAlertOn, autolinks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
         stmt.setString(1, repo.name());
         stmt.setInt(2, repo.archived() ? 1 : 0);
         stmt.setInt(3, repo.privateRepo() ? 1 : 0);
@@ -85,6 +86,7 @@ public class RepoRepository {
         stmt.setInt(8, repo.hooks() ? 1 : 0);
         stmt.setInt(9, repo.fork() ? 1 : 0);
         stmt.setInt(10, repo.isVulnAlertOn() ? 1 : 0);
+        stmt.setString(11, repo.autolinks());
 
         stmt.execute();
       }

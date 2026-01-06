@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHCommit;
@@ -159,6 +160,9 @@ public class GitHubSynchronizer {
   }
 
   public void synch(GHRepository ghRepo) throws IOException {
+    var autolinks = new ArrayList<String>();
+    ghRepo.listAutolinks().forEach(link -> autolinks.add(link.getUrlTemplate()));
+
     var repo = Repo.create()
         .name(ghRepo.getFullName())
         .archived(ghRepo.isArchived())
@@ -170,6 +174,7 @@ public class GitHubSynchronizer {
         .hooks(!ghRepo.getHooks().isEmpty())
         .fork(ghRepo.isFork())
         .isVulnAlertOn(ghRepo.isVulnerabilityAlertsEnabled())
+        .autolinks(autolinks.stream().collect(Collectors.joining("\n")))
         .build();
     repos.create(repo);
 

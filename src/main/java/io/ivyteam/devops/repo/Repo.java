@@ -10,7 +10,8 @@ public record Repo(
     boolean wiki,
     boolean hooks,
     boolean fork,
-    boolean isVulnAlertOn) {
+    boolean isVulnAlertOn,
+    String autolinks) {
 
   public String link() {
     return "/repository/" + name;
@@ -36,6 +37,7 @@ public record Repo(
     private boolean hooks;
     private boolean fork;
     private boolean isVulnAlertOn;
+    private String autolinks;
 
     public Builder name(String name) {
       this.name = name;
@@ -87,9 +89,14 @@ public record Repo(
       return this;
     }
 
+    public Builder autolinks(String autolinks) {
+      this.autolinks = autolinks;
+      return this;
+    }
+
     public Repo build() {
       return new Repo(name, archived, privateRepo, deleteBranchOnMerge, projects, issues, wiki, hooks, fork,
-          isVulnAlertOn);
+          isVulnAlertOn, autolinks);
     }
   }
 }
