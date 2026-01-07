@@ -20,6 +20,8 @@ public class SettingsView extends View {
   private final TextField gitHubAppInstallationId;
   private final TextField excludedBranchPrefixes;
   private final TextField branchProtectionPrefixes;
+  private final TextField autolinkUrl;
+  private final TextField autolinkPrefix;
 
   public SettingsView() {
     this.settings = SettingsManager.INSTANCE.get();
@@ -50,10 +52,18 @@ public class SettingsView extends View {
     branchProtectionPrefixes.setValue(settings.branchProtectionPrefixes());
     branchProtectionPrefixes.addValueChangeListener(event -> saveSettings());
 
+    autolinkUrl = new TextField("Autolink URL");
+    autolinkUrl.setValue(settings.autolinkUrl());
+    autolinkUrl.addValueChangeListener(event -> saveSettings());
+
+    autolinkPrefix = new TextField("Autolink Prefix");
+    autolinkPrefix.setValue(settings.autolinkPrefix());
+    autolinkPrefix.addValueChangeListener(event -> saveSettings());
+
     var formLayout = new FormLayout();
     formLayout.add(githubClientId, githubClientSecret, gitHubAppId, gitHubAppInstallationId,
         excludedBranchPrefixes,
-        branchProtectionPrefixes);
+        branchProtectionPrefixes, autolinkUrl, autolinkPrefix);
     formLayout.setResponsiveSteps(new ResponsiveStep("0", 1));
     div.setMaxWidth("50%");
     div.add(formLayout);
@@ -68,6 +78,8 @@ public class SettingsView extends View {
     settings.gitHubAppInstallationId(gitHubAppInstallationId.getValue());
     settings.excludedBranchPrefixes(excludedBranchPrefixes.getValue());
     settings.branchProtectionPrefixes(branchProtectionPrefixes.getValue());
+    settings.autolinkUrl(autolinkUrl.getValue());
+    settings.autolinkPrefix(autolinkPrefix.getValue());
     SettingsManager.INSTANCE.save(settings);
   }
 

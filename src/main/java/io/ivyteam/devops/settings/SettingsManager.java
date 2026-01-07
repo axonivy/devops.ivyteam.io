@@ -39,6 +39,8 @@ public class SettingsManager {
         "master,release/,stale/,dependabot/,gh-pages,dev/"));
     settings.branchProtectionPrefixes(properties.getProperty(Settings.BRANCH_PROTECTION_PREFIXES,
         "master,release/"));
+    settings.autolinkUrl(properties.getProperty(Settings.AUTOLINK_URL, ""));
+    settings.autolinkPrefix(properties.getProperty(Settings.AUTOLINK_PREFIX, ""));
     return settings;
   }
 
@@ -50,6 +52,9 @@ public class SettingsManager {
     properties.setProperty(Settings.GITHUB_APP_INSTALLATION_ID, settings.gitHubAppInstallationId());
     properties.setProperty(Settings.EXCLUDED_BRANCH_PREFIXES, settings.excludedBranchPrefixes());
     properties.setProperty(Settings.BRANCH_PROTECTION_PREFIXES, settings.branchProtectionPrefixes());
+    properties.setProperty(Settings.AUTOLINK_URL, settings.autolinkUrl());
+    properties.setProperty(Settings.AUTOLINK_PREFIX, settings.autolinkPrefix());
+
     try (var out = Files.newOutputStream(path, java.nio.file.StandardOpenOption.CREATE)) {
       properties.store(out, null);
     } catch (IOException ex) {

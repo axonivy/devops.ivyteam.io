@@ -57,7 +57,7 @@ public class GitHubRepoConfigurator {
         ghRepo.enableWiki(false);
         changed = true;
       }
-      if (repo.autolinks() == null || !repo.autolinks().equals("https://axon-ivy.atlassian.net/browse/XIVY-<num>")) {
+      if (repo.autolinks() == null || !repo.autolinks().equals(SettingsManager.INSTANCE.get().autolinkUrl())) {
         ghRepo.listAutolinks().forEach(link -> {
           try {
             LOGGER.info("Delete autolink " + link.getUrlTemplate());
@@ -69,8 +69,8 @@ public class GitHubRepoConfigurator {
         LOGGER.info("Create autolink");
         ghRepo.createAutolink()
             .withIsAlphanumeric(false)
-            .withKeyPrefix("XIVY-")
-            .withUrlTemplate("https://axon-ivy.atlassian.net/browse/XIVY-<num>")
+            .withKeyPrefix(SettingsManager.INSTANCE.get().autolinkPrefix())
+            .withUrlTemplate(SettingsManager.INSTANCE.get().autolinkUrl())
             .create();
         changed = true;
       }
