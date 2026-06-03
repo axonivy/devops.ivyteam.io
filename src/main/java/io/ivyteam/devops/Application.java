@@ -12,15 +12,15 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ColorScheme;
+import com.vaadin.flow.component.page.ColorScheme.Value;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.AppShellSettings;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 import io.ivyteam.devops.settings.SettingsManager;
 
 @SpringBootApplication
-@Theme(value = "my-theme", variant = Lumo.LIGHT)
+@ColorScheme(Value.LIGHT)
 @Push
 @EnableScheduling
 public class Application implements AppShellConfigurator {

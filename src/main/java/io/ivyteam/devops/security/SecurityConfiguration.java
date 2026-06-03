@@ -17,6 +17,7 @@ import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import io.ivyteam.devops.github.webhook.GitHubWebhookController;
 
+@SuppressWarnings("removal")
 @EnableWebSecurity
 @Configuration
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
