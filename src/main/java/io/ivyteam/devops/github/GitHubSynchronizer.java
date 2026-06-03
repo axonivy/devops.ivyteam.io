@@ -242,9 +242,13 @@ public class GitHubSynchronizer {
   }
 
   private String toLastCommitAuthor(GHCommit commit) throws IOException {
-    var author = commit.getAuthor();
-    if (author != null) {
-      return author.getLogin();
+    try {
+      var author = commit.getAuthor();
+      if (author != null) {
+        return author.getLogin();
+      }
+    } catch (Exception ex) {
+      // fail silenty, commit.getAuthor() has a bug when commiter is Copilot.
     }
     return "[unknown]";
   }
