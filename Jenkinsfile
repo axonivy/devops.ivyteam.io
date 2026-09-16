@@ -13,8 +13,8 @@ pipeline {
     stage('editorconfig') {
       steps {
         script {
-          docker.image('mstruebing/editorconfig-checker').inside {
-            sh 'ec -no-color'
+          docker.build('editorconfig', '-f Dockerfile.editorconfig .').inside {
+            sh 'editorconfig-checker'
           }
         }
       }
