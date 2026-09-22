@@ -3,6 +3,9 @@
   "extends": [
     "local>axonivy/renovate-config"
   ],
+  "baseBranchPatterns": [
+    "master"
+  ],
   "automerge": true,
   "automergeType": "branch"
 }
