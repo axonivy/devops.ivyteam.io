@@ -1,9 +1,6 @@
 package io.ivyteam.devops.user;
 
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.util.UriUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -45,7 +42,6 @@ public class UserView extends View implements HasUrlParameter<String> {
 
   @Override
   public void setParameter(BeforeEvent event, String user) {
-    user = UriUtils.decode(user, StandardCharsets.UTF_8);
     prCounter = new Span();
     title.setText(user);
     addTitleLink(User.ghLink(user));
