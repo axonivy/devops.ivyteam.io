@@ -1,9 +1,5 @@
 package io.ivyteam.devops.user;
 
-import java.nio.charset.StandardCharsets;
-
-import org.springframework.web.util.UriUtils;
-
 public record User(
     String login,
     String name,
@@ -14,7 +10,7 @@ public record User(
     String avatarUrl) {
 
   public String link() {
-    return "/users/" + UriUtils.encodePathSegment(login, StandardCharsets.UTF_8);
+    return "/users/" + login;
   }
 
   public String ghLink() {
